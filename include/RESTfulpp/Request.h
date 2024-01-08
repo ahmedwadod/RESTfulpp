@@ -19,6 +19,7 @@ public:
   std::string error;
   RESTfulpp::Uri uri;
   std::map<std::string, std::string> queryParams;
+  std::map<std::string, std::string> formData;
   std::map<std::string, std::string> headers;
 
   Request(const std::vector<char> &raw_request, size_t length) {
@@ -45,7 +46,16 @@ public:
                     headers.insert(std::make_pair(e.name, e.value));
                   });
 
+    // Body
+    if (headers["Content-type"] == "application/x-www-form-urlencoded") {
+      formData = _parse_params(body_as_string());
+    }
+
     error = "";
+  }
+
+  std::string body_as_string() {
+    return std::string(_raw_req.content.begin(), _raw_req.content.end());
   }
 
 private:

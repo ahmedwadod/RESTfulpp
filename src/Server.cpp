@@ -1,5 +1,6 @@
 #include "RESTfulpp/Server.h"
 #include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
 #include "httpparser/httprequestparser.h"
 #include "httpparser/request.h"
 #include "httpparser/response.h"
@@ -31,14 +32,12 @@ Server::Server(short port, unsigned int max_request_length) {
     std::cout << "Read " << n << " bytes\n";
     RESTfulpp::Request req(req_buf, n);
     if (!req.error.empty()) {
-      sock.write(httpparser::Response(400).to_string());
+      sock.write(RESTfulpp::Response(400, "Bad Request").serialize());
       sock.close();
       return 1;
     } else {
-      httpparser::Response resp(200);
-      std::string ok = "OK!";
-      resp.content = std::vector<char>(ok.begin(), ok.end());
-      sock.write(resp.to_string());
+      std::string name = req.queryParams["name"];
+      sock.write(RESTfulpp::Response(200, "Welcome, " + name).serialize());
     }
 
     return 0;

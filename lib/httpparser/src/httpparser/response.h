@@ -39,7 +39,7 @@ struct Response {
   std::string to_string() const {
     std::stringstream stream;
     stream << "HTTP/" << versionMajor << "." << versionMinor << " "
-           << statusCode << " " << status << "\r\n";
+           << statusCode << " " << status_str() << "\r\n";
 
     for (std::vector<Response::HeaderItem>::const_iterator it = headers.begin();
          it != headers.end(); ++it) {
@@ -51,7 +51,7 @@ struct Response {
     return stream.str();
   }
 
-  std::string status_str() {
+  std::string status_str() const {
     // Map of common HTTP status codes and their corresponding string literals
     static const std::unordered_map<unsigned int, std::string> statusCodeMap = {
         {100, "Continue"},

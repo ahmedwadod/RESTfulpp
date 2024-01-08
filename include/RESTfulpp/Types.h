@@ -1,7 +1,6 @@
 #ifndef __RESTFUL_TYPES_H__
 #define __RESTFUL_TYPES_H__
 
-#include "httpparser/request.h"
 #include <algorithm>
 #include <cstddef>
 #include <string>
