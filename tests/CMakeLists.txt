@@ -6,6 +6,11 @@ add_executable(url url.cpp)
 target_link_directories(hello PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(url PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
 
+add_executable(request request.cpp)
+target_link_directories(request PUBLIC ${CMAKE_BINARY_DIR}/lib)
+target_link_libraries(request PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
+
+
 include(CTest)
 include(Catch)
 catch_discover_tests(url)
