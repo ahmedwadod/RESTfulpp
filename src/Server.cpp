@@ -1,10 +1,6 @@
 #include "RESTfulpp/Server.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
-#include "httpparser/httprequestparser.h"
-#include "httpparser/request.h"
-#include "httpparser/response.h"
-#include "httpparser/urlparser.h"
 #include "sockpp/inet_address.h"
 #include "sockpp/socket.h"
 #include "sockpp/tcp_acceptor.h"
@@ -16,7 +12,8 @@
 
 using namespace RESTfulpp;
 
-Server::Server(short port, unsigned int max_request_length) {
+Server::Server(short port, unsigned int max_request_length)
+    : _max_req_size(max_request_length) {
   sockpp::initialize();
   _acceptor = sockpp::tcp_acceptor(port);
   if (!_acceptor) {
@@ -25,19 +22,16 @@ Server::Server(short port, unsigned int max_request_length) {
     std::cout << "Server will listen on port " << port << "\n";
   }
 
-  tcpClientHandler = [&max_request_length](sockpp::tcp_socket sock) {
-    std::vector<char> req_buf(max_request_length, 0);
-    size_t n = sock.read(req_buf.data(), max_request_length - 1);
+  tcpClientHandler = [&](sockpp::tcp_socket sock) {
+    std::vector<char> req_buf(_max_req_size, 0);
+    size_t n = sock.read(req_buf.data(), _max_req_size - 1);
 
-    std::cout << "Read " << n << " bytes\n";
-    RESTfulpp::Request req(req_buf, n);
-    if (!req.error.empty()) {
-      sock.write(RESTfulpp::Response(400, "Bad Request").serialize());
+    if (true) {
+      sock.write("X");
       sock.close();
       return 1;
     } else {
-      std::string name = req.queryParams["name"];
-      sock.write(RESTfulpp::Response(200, "Welcome, " + name).serialize());
+      sock.write("G");
     }
 
     return 0;

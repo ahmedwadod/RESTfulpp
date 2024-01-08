@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(RESTfulpp)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -7,18 +7,37 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-add_subdirectory("lib/sockpp-1.0.0")
-add_subdirectory("lib/httpparser")
+include(FetchContent)
 
-add_library(RESTfulpp src/Server.cpp)
-target_link_libraries(RESTfulpp sockpp-static)
+FetchContent_Declare(
+	llhttp 
+	URL "https://github.com/nodejs/llhttp/archive/refs/tags/release/v8.1.0.tar.gz"
+)
+FetchContent_Declare(
+	sockpp 
+	GIT_REPOSITORY https://github.com/fpagliughi/sockpp.git
+	GIT_TAG v1.0.0
+)
+					
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
+set(SOCKPP_BUILD_SHARED OFF CACHE INTERNAL "Build shared library")
+set(SOCKPP_BUILD_STATIC ON CACHE INTERNAL "Build static library")
+FetchContent_MakeAvailable(llhttp sockpp)
 
-target_include_directories(RESTfulpp PUBLIC  include)
-target_include_directories(RESTfulpp PUBLIC  lib/httpparser/src)
-target_include_directories(RESTfulpp PUBLIC  lib/sockpp-1.0.0/include)
+add_library(RESTfulpp src/Server.cpp src/Types.cpp)
+target_link_libraries(RESTfulpp sockpp-static llhttp_static)
 
-set(RESTFULPP_BUILD_EXAMPLE True)
+target_include_directories(RESTfulpp PUBLIC include)
+
+# -- Options
+set(RESTFULPP_BUILD_EXAMPLE ON)
+set(RESTFULPP_BUILD_TESTS ON)
 
 if(RESTFULPP_BUILD_EXAMPLE)
 	add_subdirectory(examples)
+endif()
+
+if(RESTFULPP_BUILD_TESTS)
+	add_subdirectory(tests)
 endif()
