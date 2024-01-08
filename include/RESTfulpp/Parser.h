@@ -4,18 +4,18 @@
 #include "RESTfulpp/Request.h"
 #include "llhttp.h"
 #include <cstddef>
-#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace RESTfulpp {
-
-static std::mutex __parse_mutex;
-static std::string __method;
-static std::string __url;
-static std::vector<std::string> __key_val_vector;
-static std::string __body;
+struct ParserData {
+  ParserData() : method(), url(), key_val_vector(), body(){};
+  std::string method;
+  std::string url;
+  std::vector<std::string> key_val_vector;
+  std::string body;
+};
 
 class BaseParser {
 public:
@@ -26,6 +26,7 @@ protected:
   std::vector<char> content;
   llhttp_errno _parse(const char *data, unsigned long length);
 
+  ParserData _data;
   llhttp_t parser;
   llhttp_settings_t settings;
 };
