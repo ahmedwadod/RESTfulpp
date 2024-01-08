@@ -1,4 +1,5 @@
 #include "RESTfulpp/Server.h"
+#include "RESTfulpp/Request.h"
 #include "httpparser/httprequestparser.h"
 #include "httpparser/request.h"
 #include "httpparser/response.h"
@@ -27,12 +28,9 @@ Server::Server(short port, unsigned int max_request_length) {
     std::vector<char> req_buf(max_request_length, 0);
     size_t n = sock.read(req_buf.data(), max_request_length - 1);
 
-    httpparser::Request req;
-    httpparser::HttpRequestParser parser;
-
-    auto result = parser.parse(req, req_buf.data(), req_buf.data() + n);
-    if (result != httpparser::HttpRequestParser::ParsingCompleted) {
-
+    std::cout << "Read " << n << " bytes\n";
+    RESTfulpp::Request req(req_buf, n);
+    if (!req.error.empty()) {
       sock.write(httpparser::Response(400).to_string());
       sock.close();
       return 1;

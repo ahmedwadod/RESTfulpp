@@ -4,12 +4,21 @@ project(RESTfulpp)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+add_subdirectory("lib/sockpp-1.0.0")
+add_subdirectory("lib/httpparser")
+
 add_library(RESTfulpp src/Server.cpp)
-target_link_directories(RESTfulpp PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>)
-target_link_libraries(RESTfulpp sockpp)
+target_link_libraries(RESTfulpp sockpp-static)
 
-add_executable(hello examples/hello.cpp)
-target_link_libraries(hello RESTfulpp)
+target_include_directories(RESTfulpp PUBLIC  include)
+target_include_directories(RESTfulpp PUBLIC  lib/httpparser/src)
+target_include_directories(RESTfulpp PUBLIC  lib/sockpp-1.0.0/include)
 
-target_include_directories(RESTfulpp PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+set(RESTFULPP_BUILD_EXAMPLE True)
 
+if(RESTFULPP_BUILD_EXAMPLE)
+	add_subdirectory(examples)
+endif()

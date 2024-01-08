@@ -49,38 +49,6 @@ struct Request {
     ;
     return stream.str();
   }
-
-  std::map<std::string, std::string> get_query_params() {
-    std::map<std::string, std::string> params;
-    UrlParser url("http://localhost" + uri);
-    if (!url.isValid() || url.query().length() == 0)
-      return params;
-
-    auto query_str = url.query();
-
-    auto itr_param = 0;
-    auto i_nparam = 0;
-    while (i_nparam != std::string::npos) {
-      i_nparam = query_str.find('&');
-      if (i_nparam == std::string::npos) {
-        params.insert(_param_to_pair(query_str.substr(itr_param)));
-      } else {
-        params.insert(_param_to_pair(query_str.substr(itr_param, i_nparam)));
-        itr_param = i_nparam + 1;
-      }
-    }
-
-    return params;
-  }
-
-private:
-  std::pair<std::string, std::string> _param_to_pair(std::string str) {
-    std::string key, value;
-    auto epos = str.find('=');
-    key = str.substr(0, epos);
-    value = str.substr(epos + 1);
-    return std::make_pair(key, value);
-  }
 };
 
 } // namespace httpparser
