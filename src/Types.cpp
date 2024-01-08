@@ -5,7 +5,6 @@
 #include <map>
 #include <regex>
 #include <string>
-#include <unordered_map>
 
 using namespace RESTfulpp;
 

@@ -2,8 +2,8 @@
 #define __RESTFULPP_REQUEST_H
 
 #include "Types.h"
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 namespace RESTfulpp {
 class Request {
@@ -13,14 +13,14 @@ public:
   std::string method;
   RESTfulpp::Url url;
   unsigned int version_major, version_minor;
-  std::unordered_map<std::string, std::string> headers;
-  std::unordered_map<std::string, std::string> formData;
+  std::map<std::string, std::string> headers;
+  std::map<std::string, std::string> formData;
   std::vector<char> content;
 
   Request();
 
   void populate();
-  std::string body_as_string();
+  std::string serialize();
 };
 } // namespace RESTfulpp
 

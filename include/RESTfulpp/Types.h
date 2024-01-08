@@ -1,15 +1,15 @@
 #ifndef __RESTFUL_TYPES_H__
 #define __RESTFUL_TYPES_H__
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 namespace RESTfulpp {
 
 // Helper function to parse a key-value pair from the query string
-static void
-_parse_param_pair(std::string &param_pair, std::string &key, std::string &value,
-                  std::unordered_map<std::string, std::string> &value_map) {
+static void _parse_param_pair(std::string &param_pair, std::string &key,
+                              std::string &value,
+                              std::map<std::string, std::string> &value_map) {
   size_t eq_pos = param_pair.find('=');
   if (eq_pos != std::string::npos) {
     key = param_pair.substr(0, eq_pos);
@@ -22,9 +22,8 @@ _parse_param_pair(std::string &param_pair, std::string &key, std::string &value,
   }
 }
 
-static std::unordered_map<std::string, std::string>
-parseParams(std::string query) {
-  std::unordered_map<std::string, std::string> params;
+static std::map<std::string, std::string> parseParams(std::string query) {
+  std::map<std::string, std::string> params;
   std::string param_pair;
   std::string key, value;
   for (char c : query) {
@@ -48,7 +47,7 @@ public:
   std::string port;
   std::string path;
   std::string query;
-  std::unordered_map<std::string, std::string> query_params;
+  std::map<std::string, std::string> query_params;
 
   Url();
   Url(std::string url_str);

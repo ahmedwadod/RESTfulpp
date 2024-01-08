@@ -30,3 +30,16 @@ TEST_CASE("Request Parsing", "[Request]") {
   REQUIRE(post_req.formData["say"] == "Hi");
   REQUIRE(post_req.formData["to"] == "Mom");
 };
+
+TEST_CASE("Serializing Request", "[Request]") {
+  RESTfulpp::RequestParser p;
+  std::string post_str = "POST / HTTP/2.0\r\n"
+                         "Host: foo.com\r\n"
+                         "Content-Type: application/x-www-form-urlencoded\r\n"
+                         "Content-Length: 13\r\n"
+                         "\r\n"
+                         "say=Hi&to=Mom";
+
+  auto req = p.parse(post_str.c_str(), post_str.length());
+  REQUIRE(req.serialize() == post_str);
+};

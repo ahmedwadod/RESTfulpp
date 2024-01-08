@@ -12,9 +12,10 @@ TEST_CASE("URL Parsing test", "[URL]") {
   REQUIRE(url.query_params["text"] == "hi");
   REQUIRE(url.query_params["to"] == "me");
 
-  BENCHMARK("URL Parser") {
-    return RESTfulpp::Url(
-        "https://www.elkhalifa.dev:8090/ahmed/page/index/action/"
-        "say?text=hi&to=me");
-  };
+  /*  BENCHMARK("URL Parser") {
+      return RESTfulpp::Url(
+          "https://www.elkhalifa.dev:8090/ahmed/page/index/action/"
+          "say?text=hi&to=me");
+    };
+    */
 }

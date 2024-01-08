@@ -4,8 +4,8 @@
 #include "RESTfulpp/Request.h"
 #include "llhttp.h"
 #include <cstddef>
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace RESTfulpp {
@@ -22,7 +22,7 @@ public:
   BaseParser();
 
 protected:
-  std::unordered_map<std::string, std::string> headers;
+  std::map<std::string, std::string> headers;
   std::vector<char> content;
   llhttp_errno _parse(const char *data, unsigned long length);
 
