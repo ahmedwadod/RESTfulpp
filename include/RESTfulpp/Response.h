@@ -20,6 +20,12 @@ public:
   Response(unsigned int statusCode, std::string body);
 
   std::string serialize();
+
+  static Response ErrorResponse(std::string error) {
+    Response res;
+    res.error = error;
+    return res;
+  }
 };
 } // namespace RESTfulpp
 

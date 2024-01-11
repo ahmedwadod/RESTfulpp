@@ -12,29 +12,27 @@ using namespace RESTfulpp;
 BaseParser::BaseParser() {
   llhttp_settings_init(&settings);
 
-  settings.on_method = [](llhttp_t *p, const char *at, unsigned long length) {
+  settings.on_method = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->method = std::string(at, length);
     return 0;
   };
 
-  settings.on_url = [](llhttp_t *p, const char *at, unsigned long length) {
+  settings.on_url = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->url = std::string(at, length);
     return 0;
   };
 
-  settings.on_header_field = [](llhttp_t *p, const char *at,
-                                unsigned long length) {
+  settings.on_header_field = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->key_val_vector.emplace_back(at, length);
     return 0;
   };
 
-  settings.on_header_value = [](llhttp_t *p, const char *at,
-                                unsigned long length) {
+  settings.on_header_value = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->key_val_vector.emplace_back(at, length);
     return 0;
   };
 
-  settings.on_body = [](llhttp_t *p, const char *at, unsigned long length) {
+  settings.on_body = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->body = std::string(at, length);
     return 0;
   };
@@ -80,6 +78,8 @@ Request RequestParser::parse(const char *data, size_t length) {
 Request RequestParser::parse(std::vector<char> data) {
   return parse(data.data(), data.size());
 }
+
+ResponseParser::ResponseParser() : BaseParser() {}
 
 Response ResponseParser::parse(const char *data, size_t length) {
   Response res;

@@ -1,12 +1,17 @@
 #include "RESTfulpp/Request.h"
+#include "RESTfulpp/Types.h"
 #include <algorithm>
 #include <ios>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using namespace RESTfulpp;
 
 Request::Request() {}
+Request::Request(std::string method, std::string path, std::vector<char> body)
+    : method(method), version_major(1), version_minor(1), url(path),
+      content(body) {}
 
 void Request::populate() {
   if (headers["Content-Type"] == "application/x-www-form-urlencoded") {
@@ -16,7 +21,10 @@ void Request::populate() {
 
 std::string Request::serialize() {
   std::stringstream s;
-  s << method << " " << url.path;
+  std::string path = "/";
+  if (!url.path.empty())
+    path = url.path;
+  s << method << " " << path;
   if (!url.query.empty()) {
     s << "?";
     std::for_each(

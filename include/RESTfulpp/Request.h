@@ -18,6 +18,7 @@ public:
   std::vector<char> content;
 
   Request();
+  Request(std::string method, std::string url, std::vector<char> body);
 
   void populate();
   std::string serialize();

@@ -8,6 +8,7 @@
 #include "sockpp/tcp_socket.h"
 #include <cstddef>
 #include <iostream>
+#include <unistd.h>
 #include <utility>
 #include <vector>
 
@@ -37,10 +38,11 @@ Server::Server(short port, unsigned int max_request_length)
       sock.close();
       return 1;
     } else {
-
-      Response res(200, "<h1>Hello, " + req.url.query_params["name"] + "</h1>");
-      res.headers["Content-Type"] = "text/html";
-      sock.write(res.serialize());
+      sock.write("HTTP/1.1 200 OK\r\n");
+      sock.write("Content-Type: text/html\r\n\r\n");
+      sock.write("<h1>Loading...</h1>");
+      sleep(3);
+      sock.write("<h2>Yaaass!</h2>");
     }
 
     return 0;

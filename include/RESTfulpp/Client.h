@@ -1,8 +1,23 @@
 #ifndef __RESTFUL_CLIENT_H__
 #define __RESTFUL_CLIENT_H__
 
-namespace RESTful {
-class Client {};
-} // namespace RESTful
+#include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
+#include "RESTfulpp/Types.h"
+#include "sockpp/tcp_connector.h"
+#include <string>
+
+namespace RESTfulpp {
+class Client {
+public:
+  Client();
+
+  Response send(Request req);
+
+private:
+  Url _url;
+  sockpp::tcp_connector _connector;
+};
+} // namespace RESTfulpp
 
 #endif // !__RESTFUL_CLIENT_H__

@@ -13,7 +13,8 @@ Url::Url(std::string url_str) {
   parse(url_str);
   if (error)
     parse("http://localhost:8080" + url_str);
-  query_params = parseParams(query);
+  if (!error)
+    query_params = parseParams(query);
 }
 
 bool Url::is_valid() { return !error; }
