@@ -25,18 +25,20 @@ Server::Server(short port, unsigned int max_request_length)
 
   tcpClientHandler = [&](sockpp::tcp_socket sock) {
     std::vector<char> req_buf(_max_req_size, 0);
-    size_t n = sock.read(req_buf.data(), _max_req_size);
+    size_t n = sock.read(req_buf.data(), req_buf.size());
     RequestParser parser;
-    auto req = parser.parse(req_buf);
+    auto req = parser.parse(req_buf.data(), n);
 
     if (!req.error.empty()) {
       std::cout << req.error << "\n";
       Response res(400, "Bad Request");
+      std::cout << res.serialize();
       sock.write(res.serialize());
       sock.close();
       return 1;
     } else {
-      Response res(200, "<h1>Hurray</h1>");
+
+      Response res(200, "<h1>Hello, " + req.url.query_params["name"] + "</h1>");
       res.headers["Content-Type"] = "text/html";
       sock.write(res.serialize());
     }

@@ -3,6 +3,7 @@
 #include "RESTfulpp/Response.h"
 #include "llhttp.h"
 #include <cstddef>
+#include <iostream>
 #include <string>
 #include <vector>
 
