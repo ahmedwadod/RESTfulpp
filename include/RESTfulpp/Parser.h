@@ -2,6 +2,7 @@
 #define __RESTFULPP_PARSER_H__
 
 #include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
 #include "llhttp.h"
 #include <cstddef>
 #include <map>
@@ -37,6 +38,14 @@ public:
   Request parse(const char *data, size_t length);
   Request parse(std::vector<char> raw_data);
 };
+
+class ResponseParser : BaseParser {
+public:
+  ResponseParser();
+  Response parse(const char *data, size_t length);
+  Response parse(std::vector<char> raw_data);
+};
+
 } // namespace RESTfulpp
 
 #endif // !__RESTFULPP_PARSER_H__

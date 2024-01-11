@@ -2,17 +2,24 @@
 #define __RESTFULPP_RESPONSE_H__
 
 #include <algorithm>
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 namespace RESTfulpp {
 class Response {
 public:
-  unsigned int status_code;
-  std::unordered_map<std::string, std::string> headers;
+  std::string error;
 
-  Response(std::string raw_resp);
+  unsigned int status_code;
+  unsigned int version_major, version_minor;
+  std::map<std::string, std::string> headers;
+  std::vector<char> content;
+
+  Response();
+  Response(unsigned int statusCode, std::string body);
+
+  std::string serialize();
 };
 } // namespace RESTfulpp
 

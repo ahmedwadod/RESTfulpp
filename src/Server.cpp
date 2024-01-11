@@ -1,4 +1,5 @@
 #include "RESTfulpp/Server.h"
+#include "RESTfulpp/Parser.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
 #include "sockpp/inet_address.h"
@@ -24,14 +25,20 @@ Server::Server(short port, unsigned int max_request_length)
 
   tcpClientHandler = [&](sockpp::tcp_socket sock) {
     std::vector<char> req_buf(_max_req_size, 0);
-    size_t n = sock.read(req_buf.data(), _max_req_size - 1);
+    size_t n = sock.read(req_buf.data(), _max_req_size);
+    RequestParser parser;
+    auto req = parser.parse(req_buf);
 
-    if (true) {
-      sock.write("X");
+    if (!req.error.empty()) {
+      std::cout << req.error << "\n";
+      Response res(400, "Bad Request");
+      sock.write(res.serialize());
       sock.close();
       return 1;
     } else {
-      sock.write("G");
+      Response res(200, "<h1>Hurray</h1>");
+      res.headers["Content-Type"] = "text/html";
+      sock.write(res.serialize());
     }
 
     return 0;

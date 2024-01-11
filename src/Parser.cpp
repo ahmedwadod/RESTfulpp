@@ -1,5 +1,6 @@
 #include "RESTfulpp/Parser.h"
 #include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
 #include "llhttp.h"
 #include <cstddef>
 #include <string>
@@ -77,4 +78,24 @@ Request RequestParser::parse(const char *data, size_t length) {
 
 Request RequestParser::parse(std::vector<char> data) {
   return parse(data.data(), data.size());
+}
+
+Response ResponseParser::parse(const char *data, size_t length) {
+  Response res;
+  if (_parse(data, length) != HPE_OK) {
+    res.error = llhttp_get_error_reason(&parser);
+    return res;
+  }
+
+  res.status_code = llhttp_get_status_code(&parser);
+  res.version_major = llhttp_get_http_major(&parser);
+  res.version_minor = llhttp_get_http_minor(&parser);
+  res.headers = headers;
+  res.content = content;
+
+  return res;
+}
+
+Response ResponseParser::parse(std::vector<char> raw_request) {
+  return parse(raw_request.data(), raw_request.size());
 }
