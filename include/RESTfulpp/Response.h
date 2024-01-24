@@ -12,14 +12,14 @@ public:
   unsigned int status_code;
   unsigned int version_major, version_minor;
   std::map<std::string, std::string> headers;
-  std::vector<char> body;
+  std::vector<char> content;
 
   Response();
 
   static Response plaintext(unsigned int status_code, std::string text);
   static Response html(unsigned int status_code, std::string html);
 
-  std::string serialize();
+  std::string serialize() const;
 };
 } // namespace RESTfulpp
 

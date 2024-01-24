@@ -16,7 +16,11 @@ public:
 
   Request();
 
-  std::string serialize();
+  static Request from_form_data(std::map<std::string, std::string> form_data);
+
+  std::map<std::string, std::string> get_form_data() const;
+
+  std::string serialize() const;
 };
 } // namespace RESTfulpp
 

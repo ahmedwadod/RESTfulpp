@@ -35,7 +35,7 @@ Uri::Uri(std::string path_str, std::map<std::string, std::string> query)
   path = path_str.empty() ? "/" : path_str;
 };
 
-std::string Uri::to_string() {
+std::string Uri::to_string() const {
   std::stringstream s;
   s << path;
   if (!query_params.empty()) {
@@ -79,10 +79,9 @@ void Url::parse(std::string url_str) {
 }
 
 // Helper function to parse a key-value pair from the query string
-static void
-RESTfulpp::_parse_param_pair(std::string &param_pair, std::string &key,
-                             std::string &value,
-                             std::map<std::string, std::string> &value_map) {
+void RESTfulpp::_parse_param_pair(
+    std::string &param_pair, std::string &key, std::string &value,
+    std::map<std::string, std::string> &value_map) {
   size_t eq_pos = param_pair.find('=');
   if (eq_pos != std::string::npos) {
     key = param_pair.substr(0, eq_pos);
@@ -95,8 +94,7 @@ RESTfulpp::_parse_param_pair(std::string &param_pair, std::string &key,
   }
 }
 
-static std::map<std::string, std::string>
-RESTfulpp::parseParams(std::string query) {
+std::map<std::string, std::string> RESTfulpp::parseParams(std::string query) {
   std::map<std::string, std::string> params;
   std::string param_pair;
   std::string key, value;

@@ -11,11 +11,11 @@ namespace RESTfulpp {
 class Response;
 class Request;
 
-static void _parse_param_pair(std::string &param_pair, std::string &key,
-                              std::string &value,
-                              std::map<std::string, std::string> &value_map);
+void _parse_param_pair(std::string &param_pair, std::string &key,
+                       std::string &value,
+                       std::map<std::string, std::string> &value_map);
 
-static std::map<std::string, std::string> parseParams(std::string query);
+std::map<std::string, std::string> parseParams(std::string query);
 
 class Uri {
 public:
@@ -26,7 +26,7 @@ public:
   Uri(std::string path, std::map<std::string, std::string> params);
   Uri(std::string uri_str);
 
-  std::string to_string();
+  std::string to_string() const;
 };
 
 class Url {

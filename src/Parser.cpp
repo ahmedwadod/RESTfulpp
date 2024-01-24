@@ -91,7 +91,7 @@ Response ResponseParser::parse(const char *data, size_t length) {
   res.version_major = llhttp_get_http_major(&parser);
   res.version_minor = llhttp_get_http_minor(&parser);
   res.headers = headers;
-  res.body = content;
+  res.content = content;
 
   return res;
 }

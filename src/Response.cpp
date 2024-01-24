@@ -15,11 +15,19 @@ Response Response::plaintext(unsigned int status_code, std::string text) {
   Response resp;
   resp.status_code = status_code;
   resp.headers["Content-Type"] = "text/plain";
-  resp.body = std::vector<char>(text.begin(), text.end());
+  resp.content = std::vector<char>(text.begin(), text.end());
   return resp;
 }
 
-std::string Response::serialize() {
+Response Response::html(unsigned int status_code, std::string text) {
+  Response resp;
+  resp.status_code = status_code;
+  resp.headers["Content-Type"] = "text/html";
+  resp.content = std::vector<char>(text.begin(), text.end());
+  return resp;
+}
+
+std::string Response::serialize() const {
   std::stringstream s;
 
   s << "HTTP/" << version_major << "." << version_minor << " " << status_code
@@ -29,7 +37,7 @@ std::string Response::serialize() {
     s << header.first << ": " << header.second << "\r\n";
   }
 
-  s << "\r\n" << std::string(body.data(), body.size());
+  s << "\r\n" << std::string(content.data(), content.size());
 
   return s.str();
 }
