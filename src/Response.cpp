@@ -7,11 +7,16 @@ using namespace RESTfulpp;
 
 std::string getHttpStatusString(unsigned int statusCode);
 
-Response::Response() : status_code(0), version_major(0), version_minor(0) {}
+Response::Response() : status_code(0), version_major(1), version_minor(1) {
+  headers["Server"] = "RESTfulpp";
+}
 
-Response::Response(unsigned int statusCode, std::string body)
-    : status_code(statusCode), version_major(1), version_minor(1) {
-  content = std::vector<char>(body.begin(), body.end());
+Response Response::plaintext(unsigned int status_code, std::string text) {
+  Response resp;
+  resp.status_code = status_code;
+  resp.headers["Content-Type"] = "text/plain";
+  resp.body = std::vector<char>(text.begin(), text.end());
+  return resp;
 }
 
 std::string Response::serialize() {
@@ -24,7 +29,7 @@ std::string Response::serialize() {
     s << header.first << ": " << header.second << "\r\n";
   }
 
-  s << "\r\n" << std::string(content.data(), content.size());
+  s << "\r\n" << std::string(body.data(), body.size());
 
   return s.str();
 }

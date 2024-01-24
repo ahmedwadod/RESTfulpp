@@ -1,23 +1,58 @@
 #include "RESTfulpp/Types.h"
 #include <algorithm>
 #include <functional>
+#include <ios>
 #include <iterator>
 #include <map>
 #include <regex>
+#include <sstream>
 #include <string>
 
 using namespace RESTfulpp;
 
-Url::Url() {}
-Url::Url(std::string url_str) {
-  parse(url_str);
-  if (error)
-    parse("http://localhost:8080" + url_str);
-  if (!error)
-    query_params = parseParams(query);
+// URI
+Uri::Uri(){};
+Uri::Uri(std::string uri_str) {
+  if (uri_str.empty()) {
+    path = "/";
+    return;
+  }
+
+  if (uri_str[0] != '/' && uri_str[0] != '?')
+    throw "Invalid Uri at position 0";
+
+  auto paramsPos = uri_str.find_first_of('?');
+  path = uri_str.substr(0, paramsPos);
+  if (path.empty())
+    path = '/';
+  if (paramsPos != std::string::npos) {
+    query_params = parseParams(uri_str.substr(paramsPos + 1));
+  }
 }
 
-bool Url::is_valid() { return !error; }
+Uri::Uri(std::string path_str, std::map<std::string, std::string> query)
+    : query_params(query) {
+  path = path_str.empty() ? "/" : path_str;
+};
+
+std::string Uri::to_string() {
+  std::stringstream s;
+  s << path;
+  if (!query_params.empty()) {
+    s << '?';
+    for (auto q : query_params) {
+      s << q.first << '=' << q.second << '&';
+    }
+    s.seekp(-1, std::ios_base::end);
+  }
+  return s.str();
+}
+
+// URL
+Url::Url(std::string url_str) {
+  parse(url_str);
+  uri = Uri(path, parseParams(query));
+}
 
 void Url::parse(std::string url_str) {
   // Regular expression to match URL components
@@ -35,9 +70,46 @@ void Url::parse(std::string url_str) {
     // Extract port if present
     if (!matches[4].str().empty()) {
       port = matches[4];
+    } else {
+      port = protocol == "https" ? "443" : "80";
     }
-    error = false;
   } else {
-    error = true;
+    throw "Invalid URL";
   }
+}
+
+// Helper function to parse a key-value pair from the query string
+static void
+RESTfulpp::_parse_param_pair(std::string &param_pair, std::string &key,
+                             std::string &value,
+                             std::map<std::string, std::string> &value_map) {
+  size_t eq_pos = param_pair.find('=');
+  if (eq_pos != std::string::npos) {
+    key = param_pair.substr(0, eq_pos);
+    value = param_pair.substr(eq_pos + 1);
+    value_map[key] = value;
+  } else {
+    // Handle parameter without a value
+    key = param_pair;
+    value_map[key] = "";
+  }
+}
+
+static std::map<std::string, std::string>
+RESTfulpp::parseParams(std::string query) {
+  std::map<std::string, std::string> params;
+  std::string param_pair;
+  std::string key, value;
+  for (char c : query) {
+    if (c == '&') {
+      _parse_param_pair(param_pair, key, value, params);
+      param_pair.clear();
+    } else {
+      param_pair += c;
+    }
+  }
+  // Parse the last parameter pair
+  _parse_param_pair(param_pair, key, value, params);
+
+  return params;
 }

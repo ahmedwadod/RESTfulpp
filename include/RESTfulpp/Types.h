@@ -1,62 +1,65 @@
 #ifndef __RESTFUL_TYPES_H__
 #define __RESTFUL_TYPES_H__
 
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
+
 namespace RESTfulpp {
 
-// Helper function to parse a key-value pair from the query string
+class Response;
+class Request;
+
 static void _parse_param_pair(std::string &param_pair, std::string &key,
                               std::string &value,
-                              std::map<std::string, std::string> &value_map) {
-  size_t eq_pos = param_pair.find('=');
-  if (eq_pos != std::string::npos) {
-    key = param_pair.substr(0, eq_pos);
-    value = param_pair.substr(eq_pos + 1);
-    value_map[key] = value;
-  } else {
-    // Handle parameter without a value
-    key = param_pair;
-    value_map[key] = "";
-  }
-}
+                              std::map<std::string, std::string> &value_map);
 
-static std::map<std::string, std::string> parseParams(std::string query) {
-  std::map<std::string, std::string> params;
-  std::string param_pair;
-  std::string key, value;
-  for (char c : query) {
-    if (c == '&') {
-      _parse_param_pair(param_pair, key, value, params);
-      param_pair.clear();
-    } else {
-      param_pair += c;
-    }
-  }
-  // Parse the last parameter pair
-  _parse_param_pair(param_pair, key, value, params);
+static std::map<std::string, std::string> parseParams(std::string query);
 
-  return params;
-}
+class Uri {
+public:
+  std::string path;
+  std::map<std::string, std::string> query_params;
+
+  Uri();
+  Uri(std::string path, std::map<std::string, std::string> params);
+  Uri(std::string uri_str);
+
+  std::string to_string();
+};
 
 class Url {
 public:
   std::string protocol;
   std::string host;
   std::string port;
-  std::string path;
-  std::string query;
-  std::map<std::string, std::string> query_params;
+  Uri uri;
 
-  Url();
   Url(std::string url_str);
-  bool is_valid();
 
 private:
-  bool error = true;
+  std::string path;
+  std::string query;
   void parse(std::string url_str);
 };
+
+// Methods
+#define ANY "ANY"
+#define GET "GET"
+#define HEAD "HEAD"
+#define POST "POST"
+#define PUT "PUT"
+#define DELETE "DELETE"
+#define CONNECT "CONNECT"
+#define OPTIONS "OPTIONS"
+#define TRACE "TRACE"
+#define PATCH "PATCH"
+
+typedef std::function<Response(Request, std::string, std::string)> RouteHandler;
+typedef std::function<Response(Request, std::string, std::string, RouteHandler)>
+    MiddlewareHandler;
+
 } // namespace RESTfulpp
 
 #endif // !__RESTFUL_TYPES_H__

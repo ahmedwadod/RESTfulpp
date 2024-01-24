@@ -15,7 +15,6 @@ public:
   Response send(Request req);
 
 private:
-  Url _url;
   sockpp::tcp_connector _connector;
 };
 } // namespace RESTfulpp

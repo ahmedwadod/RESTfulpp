@@ -60,17 +60,16 @@ RequestParser::RequestParser() : BaseParser() {}
 Request RequestParser::parse(const char *data, size_t length) {
   Request req;
   if (_parse(data, length) != HPE_OK) {
-    req.error = llhttp_get_error_reason(&parser);
+    throw llhttp_get_error_reason(&parser);
     return req;
   }
 
   req.method = _data.method;
-  req.url = Url(_data.url);
+  req.uri = Uri(_data.url);
   req.version_major = llhttp_get_http_major(&parser);
   req.version_minor = llhttp_get_http_minor(&parser);
   req.headers = headers;
   req.content = content;
-  req.populate();
 
   return req;
 }
@@ -84,7 +83,7 @@ ResponseParser::ResponseParser() : BaseParser() {}
 Response ResponseParser::parse(const char *data, size_t length) {
   Response res;
   if (_parse(data, length) != HPE_OK) {
-    res.error = llhttp_get_error_reason(&parser);
+    throw llhttp_get_error_reason(&parser);
     return res;
   }
 
@@ -92,7 +91,7 @@ Response ResponseParser::parse(const char *data, size_t length) {
   res.version_major = llhttp_get_http_major(&parser);
   res.version_minor = llhttp_get_http_minor(&parser);
   res.headers = headers;
-  res.content = content;
+  res.body = content;
 
   return res;
 }

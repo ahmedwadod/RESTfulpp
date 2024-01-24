@@ -8,19 +8,14 @@
 namespace RESTfulpp {
 class Request {
 public:
-  std::string error;
-
   std::string method;
-  RESTfulpp::Url url;
+  RESTfulpp::Uri uri;
   unsigned int version_major, version_minor;
   std::map<std::string, std::string> headers;
-  std::map<std::string, std::string> formData;
   std::vector<char> content;
 
   Request();
-  Request(std::string method, std::string url, std::vector<char> body);
 
-  void populate();
   std::string serialize();
 };
 } // namespace RESTfulpp

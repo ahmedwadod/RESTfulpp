@@ -25,25 +25,25 @@ Server::Server(short port, unsigned int max_request_length)
   }
 
   tcpClientHandler = [&](sockpp::tcp_socket sock) {
-    std::vector<char> req_buf(_max_req_size, 0);
-    size_t n = sock.read(req_buf.data(), req_buf.size());
-    RequestParser parser;
-    auto req = parser.parse(req_buf.data(), n);
-
-    if (!req.error.empty()) {
-      std::cout << req.error << "\n";
-      Response res(400, "Bad Request");
-      std::cout << res.serialize();
-      sock.write(res.serialize());
-      sock.close();
-      return 1;
-    } else {
-      sock.write("HTTP/1.1 200 OK\r\n");
-      sock.write("Content-Type: text/html\r\n\r\n");
-      sock.write("<h1>Loading...</h1>");
-      sleep(3);
-      sock.write("<h2>Yaaass!</h2>");
-    }
+    //    std::vector<char> req_buf(_max_req_size, 0);
+    //    size_t n = sock.read(req_buf.data(), req_buf.size());
+    //    RequestParser parser;
+    //    auto req = parser.parse(req_buf.data(), n);
+    //
+    //    if (!req.error.empty()) {
+    //      std::cout << req.error << "\n";
+    //      Response res(400, "Bad Request");
+    //      std::cout << res.serialize();
+    //      sock.write(res.serialize());
+    //      sock.close();
+    //      return 1;
+    //    } else {
+    //      sock.write("HTTP/1.1 200 OK\r\n");
+    //      sock.write("Content-Type: text/html\r\n\r\n");
+    //      sock.write("<h1>Loading...</h1>");
+    //      sleep(3);
+    //      sock.write("<h2>Yaaass!</h2>");
+    //    }
 
     return 0;
   };

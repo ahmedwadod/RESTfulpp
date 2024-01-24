@@ -9,23 +9,17 @@
 namespace RESTfulpp {
 class Response {
 public:
-  std::string error;
-
   unsigned int status_code;
   unsigned int version_major, version_minor;
   std::map<std::string, std::string> headers;
-  std::vector<char> content;
+  std::vector<char> body;
 
   Response();
-  Response(unsigned int statusCode, std::string body);
+
+  static Response plaintext(unsigned int status_code, std::string text);
+  static Response html(unsigned int status_code, std::string html);
 
   std::string serialize();
-
-  static Response ErrorResponse(std::string error) {
-    Response res;
-    res.error = error;
-    return res;
-  }
 };
 } // namespace RESTfulpp
 
