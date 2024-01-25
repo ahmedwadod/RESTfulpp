@@ -24,7 +24,8 @@ Server::Server(short port, unsigned int max_request_length)
     std::cout << "Server will listen on port " << port << "\n";
   }
 
-  tcpClientHandler = [&](sockpp::tcp_socket sock) {
+  tcpClientHandler = [&](sockpp::tcp_socket sock,
+                         sockpp::inet_address client_addr) {
     //    std::vector<char> req_buf(_max_req_size, 0);
     //    size_t n = sock.read(req_buf.data(), req_buf.size());
     //    RequestParser parser;
@@ -49,7 +50,7 @@ Server::Server(short port, unsigned int max_request_length)
   };
 }
 
-void Server::start() {
+void Server::start(int thread_count) {
   std::cout << "Server starting up...\n";
 
   while (true) {
@@ -61,7 +62,7 @@ void Server::start() {
       std::cerr << _acceptor.last_error_str() << "\n";
     } else {
       std::cout << "Client connected: " << client_addr.to_string() << "\n";
-      tcpClientHandler(std::move(c_sock));
+      tcpClientHandler(std::move(c_sock), client_addr);
     }
   }
 }
