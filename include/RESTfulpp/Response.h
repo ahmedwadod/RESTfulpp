@@ -1,6 +1,7 @@
 #ifndef __RESTFULPP_RESPONSE_H__
 #define __RESTFULPP_RESPONSE_H__
 
+#include "nlohmann/json.hpp"
 #include <algorithm>
 #include <map>
 #include <string>
@@ -18,7 +19,10 @@ public:
 
   static Response plaintext(unsigned int status_code, std::string text);
   static Response html(unsigned int status_code, std::string html);
+  static Response json(unsigned int status_code, nlohmann::json json_data);
 
+  std::string body() const;
+  nlohmann::json body_as_json() const;
   std::string serialize() const;
 };
 } // namespace RESTfulpp

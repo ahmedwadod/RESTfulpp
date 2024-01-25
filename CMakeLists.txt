@@ -18,15 +18,19 @@ FetchContent_Declare(
 	GIT_REPOSITORY https://github.com/fpagliughi/sockpp.git
 	GIT_TAG v1.0.0
 )
+FetchContent_Declare(
+	json
+	URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
 					
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
 set(SOCKPP_BUILD_SHARED OFF CACHE INTERNAL "Build shared library")
 set(SOCKPP_BUILD_STATIC ON CACHE INTERNAL "Build static library")
-FetchContent_MakeAvailable(llhttp sockpp)
+FetchContent_MakeAvailable(llhttp sockpp json)
 
 add_library(RESTfulpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp)
-target_link_libraries(RESTfulpp sockpp-static llhttp_static)
+target_link_libraries(RESTfulpp sockpp-static llhttp_static nlohmann_json::nlohmann_json)
 
 target_include_directories(RESTfulpp PUBLIC include)
 target_include_directories(RESTfulpp PUBLIC ${llhttp_SOURCE_DIR}/include)

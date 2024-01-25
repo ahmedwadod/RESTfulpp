@@ -1,5 +1,6 @@
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Types.h"
+#include "nlohmann/json.hpp"
 #include <algorithm>
 #include <ios>
 #include <sstream>
@@ -34,6 +35,14 @@ std::map<std::string, std::string> Request::get_form_data() const {
     throw "Request Header doesn't indicate it has Form Data";
 
   return parseParams(std::string(content.begin(), content.end()));
+}
+
+std::string Request::body() const {
+  return std::string(content.begin(), content.end());
+}
+
+nlohmann::json Request::json() const {
+  return nlohmann::json::parse(content.begin(), content.end());
 }
 
 std::string Request::serialize() const {

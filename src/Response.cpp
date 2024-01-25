@@ -1,4 +1,5 @@
 #include "RESTfulpp/Response.h"
+#include "nlohmann/json.hpp"
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -25,6 +26,23 @@ Response Response::html(unsigned int status_code, std::string text) {
   resp.headers["Content-Type"] = "text/html";
   resp.content = std::vector<char>(text.begin(), text.end());
   return resp;
+}
+
+Response Response::json(unsigned int status_code, nlohmann::json json_data) {
+  Response resp;
+  resp.status_code = status_code;
+  resp.headers["Content-Type"] = "application/json";
+  auto jdump = json_data.dump();
+  resp.content = std::vector<char>(jdump.begin(), jdump.end());
+  return resp;
+}
+
+std::string Response::body() const {
+  return std::string(content.begin(), content.end());
+}
+
+nlohmann::json Response::body_as_json() const {
+  return nlohmann::json::parse(body());
 }
 
 std::string Response::serialize() const {
