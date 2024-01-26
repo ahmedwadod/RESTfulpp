@@ -13,6 +13,8 @@ public:
   RESTfulpp::Uri uri;
   unsigned int version_major, version_minor;
   std::map<std::string, std::string> headers;
+  std::map<std::string, std::string> url_params;
+  std::string client_ip;
   std::vector<char> content;
 
   Request();

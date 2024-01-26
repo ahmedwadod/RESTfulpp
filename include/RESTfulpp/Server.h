@@ -1,6 +1,7 @@
 #ifndef __RESTFULPP_SERVER_H__
 #define __RESTFULPP_SERVER_H__
 
+#include "RESTfulpp/Router.h"
 #include "RESTfulpp/Types.h"
 #include "sockpp/inet_address.h"
 #include "sockpp/tcp_acceptor.h"
@@ -42,11 +43,16 @@ private:
   std::queue<std::pair<sockpp::tcp_socket, sockpp::inet_address>> jobs;
 };
 
+// Server
 class Server {
 public:
   Server(short port, unsigned int max_request_length = 1024);
   ~Server();
 
+  void get(std::string route_template, RouteHandler func);
+  void post(std::string route_template, RouteHandler func);
+  void put(std::string route_template, RouteHandler func);
+  void Delete(std::string route_template, RouteHandler func);
   void start(int thread_count = std::thread::hardware_concurrency());
 
 private:
@@ -54,7 +60,9 @@ private:
   unsigned int _max_req_size;
   TCPClientHandler tcpClientHandler;
   sockpp::tcp_acceptor _acceptor;
-  std::map<std::string, RouteHandler> _route_handlers;
+  void _route(std::string method, std::string route_template,
+              RouteHandler func);
+  std::vector<Router::RouteDefinition> _route_definitions;
 };
 } // namespace RESTfulpp
 

@@ -57,9 +57,8 @@ private:
 #define TRACE "TRACE"
 #define PATCH "PATCH"
 
-typedef std::function<Response(Request, std::string, std::string)> RouteHandler;
-typedef std::function<Response(Request, std::string, std::string, RouteHandler)>
-    MiddlewareHandler;
+typedef std::function<Response(Request)> RouteHandler;
+typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
 typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
 
 } // namespace RESTfulpp

@@ -2,6 +2,7 @@
 #include "RESTfulpp/Parser.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
+#include "RESTfulpp/Router.h"
 #include "sockpp/inet_address.h"
 #include "sockpp/socket.h"
 #include "sockpp/tcp_acceptor.h"
@@ -42,14 +43,27 @@ Server::Server(short port, unsigned int max_request_length)
           return;
         }
 
-        // Temp
-        auto tid = std::this_thread::get_id();
-        std::stringstream s;
-        s << tid;
-        Response res =
-            Response::html(200, "<h1>OK from Thread: " + s.str() + "</h1>");
-        job.first.write(res.serialize());
+        // Handle The Request
+        req.client_ip = job.second.to_string();
+        for (auto def : _route_definitions) {
+          auto match = Router::match_request(def, req);
+          if (match.has_value()) {
+            try {
+              req.url_params = match.value();
+              Response resp = def.handler(req);
+              job.first.write(resp.serialize());
+              return;
+            } catch (std::exception e) {
+              std::cerr << e.what();
+              Response res = Response::plaintext(500, "Server Internal Error");
+              job.first.write(res.serialize());
+              return;
+            }
+          }
+        }
 
+        Response res = Response::plaintext(404, "Page not found");
+        job.first.write(res.serialize());
         return;
       };
 
@@ -73,10 +87,29 @@ void Server::start(int thread_count) {
       std::cerr << "Error accepting connections\n";
       std::cerr << _acceptor.last_error_str() << "\n";
     } else {
-      std::cout << "Client connected: " << client_addr.to_string() << "\n";
       _pool->queue_job(std::make_pair(std::move(c_sock), client_addr));
     }
   }
+}
+
+void Server::_route(std::string method, std::string route_template,
+                    RouteHandler func) {
+  auto def = Router::route_str_to_definition(route_template);
+  def.method = method;
+  def.handler = func;
+  _route_definitions.push_back(def);
+}
+void Server::get(std::string route_template, RouteHandler func) {
+  _route("GET", route_template, func);
+}
+void Server::post(std::string route_template, RouteHandler func) {
+  _route("POST", route_template, func);
+}
+void Server::put(std::string route_template, RouteHandler func) {
+  _route("PUT", route_template, func);
+}
+void Server::Delete(std::string route_template, RouteHandler func) {
+  _route("DELETE", route_template, func);
 }
 
 // ThreadPool
