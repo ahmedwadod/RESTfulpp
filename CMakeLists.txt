@@ -29,7 +29,7 @@ set(SOCKPP_BUILD_SHARED OFF CACHE INTERNAL "Build shared library")
 set(SOCKPP_BUILD_STATIC ON CACHE INTERNAL "Build static library")
 FetchContent_MakeAvailable(llhttp sockpp json)
 
-add_library(RESTfulpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp)
+add_library(RESTfulpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
 target_link_libraries(RESTfulpp sockpp-static llhttp_static nlohmann_json::nlohmann_json)
 
 target_include_directories(RESTfulpp PUBLIC include)
