@@ -49,6 +49,7 @@ public:
   Server(short port, unsigned int max_request_length = 1024);
   ~Server();
 
+  void any(std::string route_template, RouteHandler func);
   void get(std::string route_template, RouteHandler func);
   void post(std::string route_template, RouteHandler func);
   void put(std::string route_template, RouteHandler func);

@@ -40,6 +40,7 @@ Server::Server(short port, unsigned int max_request_length)
           std::cerr << e.what();
           Response res = Response::plaintext(400, "Bad Request");
           job.first.write(res.serialize());
+          job.first.close();
           return;
         }
 
@@ -52,11 +53,13 @@ Server::Server(short port, unsigned int max_request_length)
               req.url_params = match.value();
               Response resp = def.handler(req);
               job.first.write(resp.serialize());
+              job.first.close();
               return;
             } catch (std::exception e) {
               std::cerr << e.what();
               Response res = Response::plaintext(500, "Server Internal Error");
               job.first.write(res.serialize());
+              job.first.close();
               return;
             }
           }
@@ -64,6 +67,7 @@ Server::Server(short port, unsigned int max_request_length)
 
         Response res = Response::plaintext(404, "Page not found");
         job.first.write(res.serialize());
+        job.first.close();
         return;
       };
 
@@ -98,6 +102,9 @@ void Server::_route(std::string method, std::string route_template,
   def.method = method;
   def.handler = func;
   _route_definitions.push_back(def);
+}
+void Server::any(std::string route_template, RouteHandler func) {
+  _route("ANY", route_template, func);
 }
 void Server::get(std::string route_template, RouteHandler func) {
   _route("GET", route_template, func);

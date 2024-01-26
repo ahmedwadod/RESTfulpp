@@ -10,6 +10,7 @@ RouteDefinition RESTfulpp::Router::route_str_to_definition(std::string str) {
   RouteDefinition def{.route_name = str};
   std::regex slash("\\/");
   str = std::regex_replace(str, slash, R"(\/)");
+  str = "^" + str;
   std::regex url_param(R"((\{[^ \t\r\n\/\\]+\}))",
                        std::regex_constants::ECMAScript);
   do {
@@ -48,7 +49,7 @@ RESTfulpp::Router::match_route(RouteDefinition def, std::string str) {
 
 std::optional<std::map<std::string, std::string>>
 RESTfulpp::Router::match_request(RouteDefinition def, RESTfulpp::Request req) {
-  if (def.method != req.method)
+  if (def.method != req.method && def.method != "ANY")
     return {};
   return match_route(def, req.uri.path);
 }

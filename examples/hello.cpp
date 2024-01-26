@@ -6,7 +6,7 @@
 int main() {
   RESTfulpp::Server s(8080);
 
-  s.get("/", [](RESTfulpp::Request req) {
+  s.any("/", [](RESTfulpp::Request req) {
     return RESTfulpp::Response::html(200, "<h1>Hello</h1>");
   });
 
