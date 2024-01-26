@@ -1,10 +1,12 @@
 #include "RESTfulpp/Router.h"
+#include "RESTfulpp/Request.h"
+#include "RESTfulpp/Types.h"
 #include <iostream>
 #include <regex>
 
 using namespace RESTfulpp::Router;
 
-RouteDefinition RESTfulpp::Router::route_str_to_regex(std::string str) {
+RouteDefinition RESTfulpp::Router::route_str_to_definition(std::string str) {
   RouteDefinition def{.route_name = str};
   std::regex slash("\\/");
   str = std::regex_replace(str, slash, R"(\/)");
@@ -42,4 +44,11 @@ RESTfulpp::Router::match_route(RouteDefinition def, std::string str) {
   }
 
   return params;
+}
+
+std::optional<std::map<std::string, std::string>>
+RESTfulpp::Router::match_request(RouteDefinition def, RESTfulpp::Request req) {
+  if (def.method != req.method)
+    return {};
+  return match_route(def, req.uri.path);
 }

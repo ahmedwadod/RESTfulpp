@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace RESTfulpp {
@@ -59,6 +60,7 @@ private:
 typedef std::function<Response(Request, std::string, std::string)> RouteHandler;
 typedef std::function<Response(Request, std::string, std::string, RouteHandler)>
     MiddlewareHandler;
+typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
 
 } // namespace RESTfulpp
 
