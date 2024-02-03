@@ -11,7 +11,7 @@ RouteDefinition RESTfulpp::Router::route_str_to_definition(std::string str) {
   std::regex slash("\\/");
   str = std::regex_replace(str, slash, R"(\/)");
   str = "^" + str;
-  std::regex url_param(R"((\{[^ \t\r\n\/\\]+\}))",
+  std::regex url_param(R"((\[[^ \t\r\n\/\\]+\]))",
                        std::regex_constants::ECMAScript);
   do {
     std::smatch params_sm;

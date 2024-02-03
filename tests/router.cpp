@@ -7,7 +7,7 @@
 #include "RESTfulpp/Types.h"
 
 TEST_CASE("Route to Regex: Validate", "[Router]") {
-  std::string route = "/say/{text}/to/{person}";
+  std::string route = "/say/[text]/to/[person]";
   auto def = RESTfulpp::Router::route_str_to_definition(route);
   std::regex rr = def.route_regex;
 
@@ -23,7 +23,7 @@ TEST_CASE("Route to Regex: Validate", "[Router]") {
 }
 
 TEST_CASE("Route to Regex: Capture Groups", "[Router]") {
-  std::string route = "/say/{text}/to/{person}";
+  std::string route = "/say/[text]/to/[person]";
   auto def = RESTfulpp::Router::route_str_to_definition(route);
   REQUIRE(def.params_names[0] == "text");
   REQUIRE(def.params_names[1] == "person");
@@ -49,7 +49,7 @@ TEST_CASE("Router: Match Simple Route", "[Router]") {
 }
 
 TEST_CASE("Router: Match Complex Route", "[Router]") {
-  std::string route = "/say/{text}/to/{person}";
+  std::string route = "/say/[text]/to/[person]";
   auto def = RESTfulpp::Router::route_str_to_definition(route);
   std::string r1 = "/say/hi/to/mom";
 
@@ -61,7 +61,7 @@ TEST_CASE("Router: Match Complex Route", "[Router]") {
 }
 
 TEST_CASE("Match Request", "[Router]") {
-  std::string route = "/say/{text}/to/{person}";
+  std::string route = "/say/[text]/to/[person]";
   auto def = RESTfulpp::Router::route_str_to_definition(route);
   def.method = "GET";
 

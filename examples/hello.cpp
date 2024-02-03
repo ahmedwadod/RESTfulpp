@@ -10,7 +10,7 @@ int main() {
     return RESTfulpp::Response::html(200, "<h1>Hello</h1>");
   });
 
-  s.get("/say/{text}/to/{person}", [](RESTfulpp::Request req) {
+  s.get("/say/[text]/to/[person]", [](RESTfulpp::Request req) {
     std::string html = "<h1>" + req.url_params["text"] + ", " +
                        req.url_params["person"] + "</h1>";
 
