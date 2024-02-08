@@ -29,7 +29,7 @@ Request Request::from_form_data(std::map<std::string, std::string> form_data) {
   return req;
 }
 
-std::map<std::string, std::string> Request::get_form_data() const {
+std::map<std::string, std::string> Request::body_as_form_data() const {
   auto ct = headers.find("Content-Type");
   if (ct == headers.end() || ct->second != "application/x-www-form-urlencoded")
     throw "Request Header doesn't indicate it has Form Data";
@@ -37,11 +37,11 @@ std::map<std::string, std::string> Request::get_form_data() const {
   return parseParams(std::string(content.begin(), content.end()));
 }
 
-std::string Request::body() const {
+std::string Request::body_as_text() const {
   return std::string(content.begin(), content.end());
 }
 
-nlohmann::json Request::json() const {
+nlohmann::json Request::body_as_json() const {
   return nlohmann::json::parse(content.begin(), content.end());
 }
 

@@ -1,8 +1,8 @@
 #include "RESTfulpp/Server.h"
-#include "RESTfulpp/Parser.h"
+#include "RESTfulpp/Internals/Parser.h"
+#include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
-#include "RESTfulpp/Router.h"
 #include "sockpp/inet_address.h"
 #include "sockpp/socket.h"
 #include "sockpp/tcp_acceptor.h"
@@ -34,7 +34,7 @@ Server::Server(short port, unsigned int max_request_length)
         size_t n = job.first.read(req_buf.data(), req_buf.size());
         Request req;
         try {
-          RequestParser parser;
+          Internals::RequestParser parser;
           req = parser.parse(req_buf.data(), n);
         } catch (std::exception e) {
           std::cerr << e.what();
@@ -47,7 +47,7 @@ Server::Server(short port, unsigned int max_request_length)
         // Handle The Request
         req.client_ip = job.second.to_string();
         for (auto def : _route_definitions) {
-          auto match = Router::match_request(def, req);
+          auto match = Internals::Router::match_request(def, req);
           if (match.has_value()) {
             try {
               req.url_params = match.value();
@@ -98,7 +98,7 @@ void Server::start(int thread_count) {
 
 void Server::_route(std::string method, std::string route_template,
                     RouteHandler func) {
-  auto def = Router::route_str_to_definition(route_template);
+  auto def = Internals::Router::route_str_to_definition(route_template);
   def.method = method;
   def.handler = func;
   _route_definitions.push_back(def);

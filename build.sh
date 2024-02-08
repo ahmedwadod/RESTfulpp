@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cmake -Bbuild .
+cmake -Bbuild -DRESTFULPP_BUILD_TESTS=ON -DRESTFULPP_BUILD_EXAMPLES=ON -DDOWNLOAD_EXTRACT_TIMESTAMP=ON .
 cmake --build build

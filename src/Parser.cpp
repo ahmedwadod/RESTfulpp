@@ -1,13 +1,13 @@
-#include "RESTfulpp/Parser.h"
+#include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
 #include "llhttp.h"
 #include <cstddef>
-#include <iostream>
 #include <string>
 #include <vector>
 
 using namespace RESTfulpp;
+using namespace RESTfulpp::Internals;
 
 BaseParser::BaseParser() {
   llhttp_settings_init(&settings);

@@ -1,8 +1,8 @@
 #ifndef __RESTFULPP_SERVER_H__
 #define __RESTFULPP_SERVER_H__
 
-#include "RESTfulpp/Router.h"
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Internals/Router.h"
+#include "Types.h"
 #include "sockpp/inet_address.h"
 #include "sockpp/tcp_acceptor.h"
 #include "sockpp/tcp_socket.h"
@@ -63,7 +63,7 @@ private:
   sockpp::tcp_acceptor _acceptor;
   void _route(std::string method, std::string route_template,
               RouteHandler func);
-  std::vector<Router::RouteDefinition> _route_definitions;
+  std::vector<Internals::Router::RouteDefinition> _route_definitions;
 };
 } // namespace RESTfulpp
 

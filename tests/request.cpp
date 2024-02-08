@@ -1,11 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-#include "RESTfulpp/Parser.h"
+#include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Request.h"
 
 TEST_CASE("Serializing Request", "[Request]") {
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   std::string post_str = "POST / HTTP/2.0\r\n"
                          "Host: foo.com\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -18,7 +18,7 @@ TEST_CASE("Serializing Request", "[Request]") {
 };
 
 TEST_CASE("Request Form Data", "[Request]") {
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   std::string post_str = "POST / HTTP/2.0\r\n"
                          "Host: foo.com\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -27,13 +27,13 @@ TEST_CASE("Request Form Data", "[Request]") {
                          "say=Hi&to=Mom";
 
   auto req = p.parse(post_str.c_str(), post_str.length());
-  auto formData = req.get_form_data();
+  auto formData = req.body_as_form_data();
   REQUIRE(formData["say"] == "Hi");
   REQUIRE(formData["to"] == "Mom");
 };
 
 TEST_CASE("JSON Request", "[Request]") {
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   std::string post_str = "POST /json HTTP/1.1\r\n"
                          "Host: foo.com\r\n"
                          "Content-Type: application/json\r\n"
@@ -41,7 +41,7 @@ TEST_CASE("JSON Request", "[Request]") {
                          "\r\n"
                          "{\"say\": \"hi\", \"to\":\"mom\"}";
   auto req = p.parse(post_str.c_str(), post_str.length());
-  auto jsonData = req.json();
+  auto jsonData = req.body_as_json();
   REQUIRE(jsonData["say"] == "hi");
   REQUIRE(jsonData["to"] == "mom");
 }

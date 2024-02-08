@@ -25,7 +25,7 @@ int main() {
   });
 
   server.post("/", [&people](RESTfulpp::Request req) {
-    json data = req.json();
+    json data = req.body_as_json();
     if (data.count("name") == 0) {
       return RESTfulpp::Response::json(400,
                                        R"({"error": "No name suplied"})"_json);
@@ -44,7 +44,7 @@ int main() {
   });
 
   server.put("/", [&people](RESTfulpp::Request req) {
-    json data = req.json();
+    json data = req.body_as_json();
     if (data.count("name") == 0) {
       return RESTfulpp::Response::json(400,
                                        R"({"error": "No name suplied"})"_json);

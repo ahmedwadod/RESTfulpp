@@ -1,7 +1,7 @@
 #ifndef __REFTFULPP_ROUTER_H__
 #define __REFTFULPP_ROUTER_H__
 
-#include "Types.h"
+#include "../Types.h"
 #include <map>
 #include <optional>
 #include <regex>
@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace RESTfulpp {
+namespace Internals {
+
 namespace Router {
 
 struct RouteDefinition {
@@ -16,7 +18,7 @@ struct RouteDefinition {
   std::string method;
   std::vector<std::string> params_names;
   std::regex route_regex;
-  RouteHandler handler;
+  RESTfulpp::RouteHandler handler;
 };
 
 RouteDefinition route_str_to_definition(std::string str);
@@ -28,5 +30,6 @@ std::optional<std::map<std::string, std::string>>
 match_request(RouteDefinition def, RESTfulpp::Request req);
 
 } // namespace Router
+} // namespace Internals
 } // namespace RESTfulpp
 #endif // !__REFTFULPP_ROUTER_H__

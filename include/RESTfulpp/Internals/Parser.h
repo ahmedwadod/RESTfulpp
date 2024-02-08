@@ -10,6 +10,8 @@
 #include <vector>
 
 namespace RESTfulpp {
+namespace Internals {
+
 struct ParserData {
   ParserData() : method(), url(), key_val_vector(), body(){};
   std::string method;
@@ -46,6 +48,6 @@ public:
   Response parse(std::vector<char> raw_data);
 };
 
+} // namespace Internals
 } // namespace RESTfulpp
-
 #endif // !__RESTFULPP_PARSER_H__

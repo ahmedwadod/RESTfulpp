@@ -21,9 +21,9 @@ public:
 
   static Request from_form_data(std::map<std::string, std::string> form_data);
 
-  std::map<std::string, std::string> get_form_data() const;
-  std::string body() const;
-  nlohmann::json json() const;
+  std::map<std::string, std::string> body_as_form_data() const;
+  std::string body_as_text() const;
+  nlohmann::json body_as_json() const;
 
   std::string serialize() const;
 };

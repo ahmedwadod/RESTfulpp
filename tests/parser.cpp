@@ -1,11 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "RESTfulpp/Parser.h"
+#include "RESTfulpp/Internals/Parser.h"
 #include <string>
 
 TEST_CASE("Basic GET Request", "[RequestParser]") {
   std::string req_str = "GET / HTTP/1.1\r\nHost:foo.com\r\n";
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   auto req = p.parse(req_str.c_str(), req_str.length());
 
   REQUIRE(req.method == "GET");
@@ -17,7 +17,7 @@ TEST_CASE("Basic GET Request", "[RequestParser]") {
 
 TEST_CASE("GET Request with params", "[RequestParser]") {
   std::string req_str = "GET /?say=hi&to=mom HTTP/1.1\r\nHost:foo.com\r\n";
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   auto req = p.parse(req_str.c_str(), req_str.length());
 
   REQUIRE(req.method == "GET");
@@ -36,7 +36,7 @@ TEST_CASE("Basic POST", "[RequestParser]") {
                         "Content-Type: text/plain\r\n"
                         "\r\n"
                         "Hello, World!";
-  RESTfulpp::RequestParser p;
+  RESTfulpp::Internals::RequestParser p;
   auto req = p.parse(req_str.c_str(), req_str.length());
 
   REQUIRE(req.method == "POST");
@@ -44,5 +44,5 @@ TEST_CASE("Basic POST", "[RequestParser]") {
   REQUIRE(req.headers["Host"] == "foo.com");
   REQUIRE(req.version_major == 1);
   REQUIRE(req.version_minor == 1);
-  REQUIRE(req.body() == "Hello, World!");
+  REQUIRE(req.body_as_text() == "Hello, World!");
 }

@@ -1,12 +1,12 @@
-#include "RESTfulpp/Router.h"
+#include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Types.h"
-#include <iostream>
 #include <regex>
 
-using namespace RESTfulpp::Router;
+using namespace RESTfulpp::Internals::Router;
 
-RouteDefinition RESTfulpp::Router::route_str_to_definition(std::string str) {
+RouteDefinition
+RESTfulpp::Internals::Router::route_str_to_definition(std::string str) {
   RouteDefinition def{.route_name = str};
   std::regex slash("\\/");
   str = std::regex_replace(str, slash, R"(\/)");
@@ -33,7 +33,8 @@ RouteDefinition RESTfulpp::Router::route_str_to_definition(std::string str) {
 }
 
 std::optional<std::map<std::string, std::string>>
-RESTfulpp::Router::match_route(RouteDefinition def, std::string str) {
+RESTfulpp::Internals::Router::match_route(RouteDefinition def,
+                                          std::string str) {
   std::smatch matches;
   if (!std::regex_search(str, matches, def.route_regex)) {
     return {};
@@ -48,7 +49,8 @@ RESTfulpp::Router::match_route(RouteDefinition def, std::string str) {
 }
 
 std::optional<std::map<std::string, std::string>>
-RESTfulpp::Router::match_request(RouteDefinition def, RESTfulpp::Request req) {
+RESTfulpp::Internals::Router::match_request(RouteDefinition def,
+                                            RESTfulpp::Request req) {
   if (def.method != req.method && def.method != "ANY")
     return {};
   return match_route(def, req.uri.path);

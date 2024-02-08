@@ -1,8 +1,5 @@
 #include "RESTfulpp/Types.h"
-#include <algorithm>
-#include <functional>
 #include <ios>
-#include <iterator>
 #include <map>
 #include <regex>
 #include <sstream>

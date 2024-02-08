@@ -2,7 +2,9 @@
 
 cmake -Bbuild .
 cmake --build build
-./build/tests/url
-./build/tests/parser
-./build/tests/request
-./build/tests/router
+for file in build/tests/*; do
+	if [ -x "$file" ] && [ "$file" != "build/tests/CMakeFiles" ]; then
+		# Execute the file
+		./"$file"
+	fi
+done
