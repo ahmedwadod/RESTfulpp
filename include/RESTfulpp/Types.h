@@ -17,47 +17,50 @@
 #include <variant>
 #include <vector>
 
-namespace RESTfulpp {
+namespace RESTfulpp
+{
 
-// These are defined here to avoid circular dependancy with Request and Response
-class Response;
-class Request;
+  // These are defined here to avoid circular dependancy with Request and Response
+  class Response;
+  class Request;
 
-// These 2 functions are used with both form data and query params
-void _parse_param_pair(std::string &param_pair, std::string &key,
-                       std::string &value,
-                       std::map<std::string, std::string> &value_map);
+  // These 2 functions are used with both form data and query params
+  void _parse_param_pair(std::string &param_pair, std::string &key,
+                         std::string &value,
+                         std::map<std::string, std::string> &value_map);
 
-std::map<std::string, std::string> parseParams(std::string query);
+  std::map<std::string, std::string> parseParams(std::string query, char seprator = '&');
 
-// Uri (The path after the host and port)
-class Uri {
-public:
-  std::string path;
-  std::map<std::string, std::string> query_params;
+  // Uri (The path after the host and port)
+  class Uri
+  {
+  public:
+    std::string path;
+    std::map<std::string, std::string> query_params;
 
-  Uri();
-  Uri(std::string path, std::map<std::string, std::string> params);
-  Uri(std::string uri_str);
+    Uri();
+    Uri(std::string path, std::map<std::string, std::string> params);
+    Uri(std::string uri_str);
 
-  std::string to_string() const;
-};
+    std::string to_string() const;
+  };
 
-// Full Url containing the Uri as RESTfulpp::Uri type
-class Url {
-public:
-  std::string protocol;
-  std::string host;
-  std::string port;
-  Uri uri;
+  // Full Url containing the Uri as RESTfulpp::Uri type
+  class Url
+  {
+  public:
+    std::string protocol;
+    std::string host;
+    std::string port;
+    Uri uri;
 
-  Url(std::string url_str);
+    Url(std::string url_str);
 
-private:
-  std::string path;
-  std::string query;
-  void parse(std::string url_str);
-};
+  private:
+    std::string path;
+    std::string query;
+    void parse(std::string url_str);
+  };
 
 // Methods (Unused for now)
 #define ANY "ANY"
@@ -71,10 +74,10 @@ private:
 #define TRACE "TRACE"
 #define PATCH "PATCH"
 
-// Functions that are used with the route definitions
-typedef std::function<Response(Request)> RouteHandler;
-typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
-typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
+  // Functions that are used with the route definitions
+  typedef std::function<Response(Request)> RouteHandler;
+  typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
+  typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
 
 } // namespace RESTfulpp
 

@@ -9,8 +9,10 @@ using namespace RESTfulpp;
 
 // URI
 Uri::Uri(){};
-Uri::Uri(std::string uri_str) {
-  if (uri_str.empty()) {
+Uri::Uri(std::string uri_str)
+{
+  if (uri_str.empty())
+  {
     path = "/";
     return;
   }
@@ -22,22 +24,27 @@ Uri::Uri(std::string uri_str) {
   path = uri_str.substr(0, paramsPos);
   if (path.empty())
     path = '/';
-  if (paramsPos != std::string::npos) {
+  if (paramsPos != std::string::npos)
+  {
     query_params = parseParams(uri_str.substr(paramsPos + 1));
   }
 }
 
 Uri::Uri(std::string path_str, std::map<std::string, std::string> query)
-    : query_params(query) {
+    : query_params(query)
+{
   path = path_str.empty() ? "/" : path_str;
 };
 
-std::string Uri::to_string() const {
+std::string Uri::to_string() const
+{
   std::stringstream s;
   s << path;
-  if (!query_params.empty()) {
+  if (!query_params.empty())
+  {
     s << '?';
-    for (auto q : query_params) {
+    for (auto q : query_params)
+    {
       s << q.first << '=' << q.second << '&';
     }
     s.seekp(-1, std::ios_base::end);
@@ -46,31 +53,39 @@ std::string Uri::to_string() const {
 }
 
 // URL
-Url::Url(std::string url_str) {
+Url::Url(std::string url_str)
+{
   parse(url_str);
   uri = Uri(path, parseParams(query));
 }
 
-void Url::parse(std::string url_str) {
+void Url::parse(std::string url_str)
+{
   // Regular expression to match URL components
   std::regex url_regex(
       R"(^(\w+):\/\/([^:/]+)(:(\d+))?([^?#]*)(\?([^#]*))?(#(.*))?)");
   std::smatch matches;
 
   // Match the URL against the regular expression
-  if (std::regex_match(url_str, matches, url_regex)) {
+  if (std::regex_match(url_str, matches, url_regex))
+  {
     protocol = matches[1];
     host = matches[2];
     path = matches[5].str();
     query = matches[7].str();
 
     // Extract port if present
-    if (!matches[4].str().empty()) {
+    if (!matches[4].str().empty())
+    {
       port = matches[4];
-    } else {
+    }
+    else
+    {
       port = protocol == "https" ? "443" : "80";
     }
-  } else {
+  }
+  else
+  {
     throw "Invalid URL";
   }
 }
@@ -78,33 +93,51 @@ void Url::parse(std::string url_str) {
 // Helper function to parse a key-value pair from the query string
 void RESTfulpp::_parse_param_pair(
     std::string &param_pair, std::string &key, std::string &value,
-    std::map<std::string, std::string> &value_map) {
+    std::map<std::string, std::string> &value_map)
+{
   size_t eq_pos = param_pair.find('=');
-  if (eq_pos != std::string::npos) {
+  if (eq_pos != std::string::npos)
+  {
     key = param_pair.substr(0, eq_pos);
     value = param_pair.substr(eq_pos + 1);
     value_map[key] = value;
-  } else {
+  }
+  else
+  {
     // Handle parameter without a value
     key = param_pair;
     value_map[key] = "";
   }
 }
 
-std::map<std::string, std::string> RESTfulpp::parseParams(std::string query) {
+std::map<std::string, std::string> RESTfulpp::parseParams(std::string query, char seprator)
+{
   std::map<std::string, std::string> params;
   std::string param_pair;
   std::string key, value;
-  for (char c : query) {
-    if (c == '&') {
+  // If the seprator is ; then we replace "; " with just ";"
+  if (seprator == ';')
+  {
+    query = std::regex_replace(query, std::regex("; "), ";");
+  }
+  for (char c : query)
+  {
+    if (c == seprator)
+    {
       _parse_param_pair(param_pair, key, value, params);
       param_pair.clear();
-    } else {
+    }
+    else
+    {
       param_pair += c;
     }
   }
-  // Parse the last parameter pair
-  _parse_param_pair(param_pair, key, value, params);
+
+  // Parse the last parameter pair if it exists
+  if (!param_pair.empty())
+  {
+    _parse_param_pair(param_pair, key, value, params);
+  }
 
   return params;
 }
