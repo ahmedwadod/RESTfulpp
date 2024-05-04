@@ -1,0 +1,4 @@
+- Seperate ThreadPool from Server
+- Add Cookies helper functions in Request
+- Code comments
+- Add README
