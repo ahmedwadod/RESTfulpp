@@ -36,7 +36,7 @@ FetchContent_MakeAvailable(llhttp sockpp)
 
 
 # --------------------- CREATE TARGET RESTFULPP --------------------------
-add_library(RESTfulpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/ThreadPool.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
+add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/ThreadPool.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
 target_link_libraries(RESTfulpp sockpp-static llhttp_static nlohmann_json::nlohmann_json)
 target_include_directories(RESTfulpp PUBLIC include)
 target_include_directories(RESTfulpp PUBLIC ${llhttp_SOURCE_DIR}/include)

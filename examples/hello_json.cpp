@@ -1,6 +1,7 @@
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
 #include "RESTfulpp/Server.h"
+#include "RESTfulpp/Logging.h"
 #include "nlohmann/json_fwd.hpp"
 #include <map>
 #include <string>
@@ -9,6 +10,7 @@
 using namespace nlohmann;
 int main()
 {
+  RESTfulpp::setLogLevel(RESTfulpp::LogLevel::DEBUG);
   RESTfulpp::Server server(8000);
   std::map<std::string, unsigned int> people;
 
