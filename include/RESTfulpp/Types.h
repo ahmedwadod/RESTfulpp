@@ -16,6 +16,10 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include "sockpp/inet_address.h"
+#include "sockpp/socket.h"
+#include "sockpp/tcp_acceptor.h"
+#include "sockpp/tcp_socket.h"
 
 namespace RESTfulpp
 {
@@ -78,6 +82,10 @@ namespace RESTfulpp
   typedef std::function<Response(Request)> RouteHandler;
   typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
   typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
+
+  // Used on Server
+  typedef std::function<void(std::pair<sockpp::tcp_socket, sockpp::inet_address>)>
+      TCPClientHandler;
 
 } // namespace RESTfulpp
 

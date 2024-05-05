@@ -1,6 +1,7 @@
 #ifndef __RESTFULPP_SERVER_H__
 #define __RESTFULPP_SERVER_H__
 
+#include "RESTfulpp/Internals/ThreadPool.h"
 #include "RESTfulpp/Internals/Router.h"
 #include "Types.h"
 #include "sockpp/inet_address.h"
@@ -14,36 +15,10 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include "RESTfulpp/Types.h"
 
 namespace RESTfulpp
 {
-
-  typedef std::function<void(std::pair<sockpp::tcp_socket, sockpp::inet_address>)>
-      TCPClientHandler;
-
-  class ThreadPool
-  {
-  public:
-    ThreadPool();
-    ThreadPool(
-        std::function<void(std::pair<sockpp::tcp_socket, sockpp::inet_address>)>
-            runner_function);
-    void start(unsigned int num_threads);
-    void queue_job(std::pair<sockpp::tcp_socket, sockpp::inet_address> job);
-    void stop();
-    bool is_busy();
-
-  private:
-    void _thread_loop();
-
-    std::function<void(std::pair<sockpp::tcp_socket, sockpp::inet_address>)>
-        runner;
-    bool should_terminate = false;
-    std::mutex queue_mutex;
-    std::condition_variable mutex_condition;
-    std::vector<std::thread> threads;
-    std::queue<std::pair<sockpp::tcp_socket, sockpp::inet_address>> jobs;
-  };
 
   // Server
   class Server
