@@ -64,5 +64,5 @@ int main() {
     return RESTfulpp::Response::json(200, data);
   });
 
-  server.start();
+  server.start(8000);
 }

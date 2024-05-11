@@ -3,6 +3,8 @@
 #include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Logging.h"
+#include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
 #include "event2/event.h"
 #include <arpa/inet.h>
 #include <cstddef>
@@ -67,7 +69,7 @@ void Server::start(int port, std::string address) {
                                       (void *)server_ctx, LEV_OPT_CLOSE_ON_FREE,
                                       -1, (sockaddr *)&sin, sizeof(sin));
   if (!_listener) {
-    log_e("Error creating listener");
+    log_e("Error creating on port " + std::to_string(port));
     throw "Error creating listener";
   }
   evconnlistener_set_error_cb(
@@ -101,13 +103,19 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
     log_e("Error creating bufferevent");
     throw "Error creating bufferevent";
   }
+  conn_ctx->buffer_event = bev;
 
   conn_ctx->request_parser.set_on_complete_cb(
       [](void *args) {
         Internals::ConnectionContext *conn_ctx =
             (Internals::ConnectionContext *)args;
         auto req = conn_ctx->request_parser.snapshot();
-        log_d(req.serialize());
+        req.client_ip = conn_ctx->client_address;
+        auto res = RESTfulpp::process_request_with_routes(
+            req, conn_ctx->server_context->route_definitions);
+        auto res_str = res.serialize();
+        bufferevent_write(conn_ctx->buffer_event, res_str.c_str(),
+                          res_str.size());
       },
       (void *)conn_ctx);
 
@@ -122,16 +130,19 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
           return;
         } else if (len > conn_ctx->server_context->max_request_size) {
           log_e(conn_ctx->client_address + ": Request too large");
-          delete conn_ctx;
-          bufferevent_free(bev);
+          auto res_str = RESTfulpp::Response::plaintext(413, "Request too large").serialize();
+          bufferevent_write(bev, res_str.c_str(), res_str.size());
           return;
         }
+
         char *data = (char *)malloc(len + 1);
         evbuffer_remove(input, data, len);
         try {
           conn_ctx->request_parser.parse(data, len);
         } catch (const char *e) {
-          log_e(e);
+          log_e(conn_ctx->client_address + ": " + e);
+          auto res_str = RESTfulpp::Response::plaintext(400, "Error parsing HTTP request").serialize();
+          bufferevent_write(bev, res_str.c_str(), res_str.size());
         }
         free(data);
       },

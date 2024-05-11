@@ -21,7 +21,7 @@ namespace RESTfulpp {
 // Server
 class Server {
 public:
-  Server(unsigned int max_request_length = 1024);
+  Server(unsigned int max_request_length = 1024 * 1024);
   ~Server();
 
   void any(std::string route_template, RouteHandler func);

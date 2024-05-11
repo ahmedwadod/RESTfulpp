@@ -2,6 +2,7 @@
 #define _RESTFULPP_CONNECTION_CONTEXT_H_
 #include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Internals/Router.h"
+#include "event2/bufferevent.h"
 
 namespace RESTfulpp::Internals {
 class ServerContext {
@@ -22,6 +23,7 @@ public:
 
   std::string client_address;
   Internals::RequestParser request_parser;
+  bufferevent *buffer_event;
   ServerContext *server_context;
 };
 
