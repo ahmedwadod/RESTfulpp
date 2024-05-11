@@ -1,7 +1,8 @@
 #ifndef __REFTFULPP_ROUTER_H__
 #define __REFTFULPP_ROUTER_H__
 
-#include "../Util.h"
+#include "RESTfulpp/Util.h"
+#include "RESTfulpp/Request.h"
 #include <map>
 #include <optional>
 #include <regex>
@@ -13,21 +14,13 @@ namespace Internals {
 
 namespace Router {
 
-struct RouteDefinition {
-  std::string route_name;
-  std::string method;
-  std::vector<std::string> params_names;
-  std::regex route_regex;
-  RESTfulpp::RouteHandler handler;
-};
-
-RouteDefinition route_str_to_definition(std::string str);
+RESTfulpp::RouteDefinition route_str_to_definition(std::string str);
 
 std::optional<std::map<std::string, std::string>>
-match_route(RouteDefinition def, std::string str);
+match_route(RESTfulpp::RouteDefinition def, std::string str);
 
 std::optional<std::map<std::string, std::string>>
-match_request(RouteDefinition def, RESTfulpp::Request req);
+match_request(RESTfulpp::RouteDefinition def, RESTfulpp::Request req);
 
 } // namespace Router
 } // namespace Internals

@@ -1,9 +1,13 @@
 #include "RESTfulpp/Util.h"
+#include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
+#include "RESTfulpp/Internals/Router.h"
 #include <ios>
 #include <map>
 #include <regex>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using namespace RESTfulpp;
 
@@ -110,4 +114,21 @@ std::map<std::string, std::string> RESTfulpp::parseParams(std::string query,
     _parse_param_pair(param_pair, key, value, params);
 
   return params;
+}
+
+Response RESTfulpp::process_request_with_routes(Request req,
+                                     std::vector<RouteDefinition> *routes) {
+  for (auto route : *routes) {
+    auto match = Internals::Router::match_request(route, req);
+    if (match.has_value()) {
+      try {
+        req.url_params = match.value();
+        return route.handler(req);
+      } catch (std::exception &e) {
+        return Response::plaintext(500, "Internal Server Error");
+      }
+    }
+  }
+
+  return Response::plaintext(404, "Not Found");
 }

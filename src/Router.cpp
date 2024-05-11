@@ -5,7 +5,7 @@
 
 using namespace RESTfulpp::Internals::Router;
 
-RouteDefinition
+RESTfulpp::RouteDefinition
 RESTfulpp::Internals::Router::route_str_to_definition(std::string str) {
   RouteDefinition def{.route_name = str};
   std::regex slash("\\/");

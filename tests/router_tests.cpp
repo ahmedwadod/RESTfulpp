@@ -4,6 +4,7 @@
 
 #include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Request.h"
+#include "RESTfulpp/Response.h"
 #include "RESTfulpp/Util.h"
 
 TEST_CASE("Route to Regex: Validate", "[Router]") {
@@ -75,4 +76,31 @@ TEST_CASE("Match Request", "[Router]") {
   auto value = match.value();
   REQUIRE(value["text"] == "hi");
   REQUIRE(value["person"] == "mom");
+}
+
+TEST_CASE("Process Request with Routes", "[Router]") {
+  std::string route = "/say/[text]/to/[person]";
+  auto def = RESTfulpp::Internals::Router::route_str_to_definition(route);
+  def.method = "GET";
+  def.handler = [](RESTfulpp::Request req) {
+    return RESTfulpp::Response::plaintext(200, "Hello, World!");
+  };
+
+  std::vector<RESTfulpp::RouteDefinition> routes = {def};
+
+  RESTfulpp::Request req1;
+  req1.method = "GET";
+  req1.uri = RESTfulpp::Uri("/say/hi/to/mom?from=ahmed");
+  RESTfulpp::Request req2;
+  req2.method = "GET";
+  req2.uri = RESTfulpp::Uri("/do/something");
+
+  auto resp1 = RESTfulpp::process_request_with_routes(
+      req1, &routes);
+  auto resp2 = RESTfulpp::process_request_with_routes(
+      req2, &routes);
+  REQUIRE(resp1.status_code == 200);
+  REQUIRE(resp1.body() == "Hello, World!");
+  REQUIRE(resp2.status_code == 404);
+  REQUIRE(resp2.body() == "Not Found");
 }

@@ -11,6 +11,7 @@
  *
  */
 
+#include <regex>
 #include <functional>
 #include <map>
 #include <string>
@@ -60,6 +61,7 @@ private:
   void parse(std::string url_str);
 };
 
+
 // Methods (Unused for now)
 #define ANY "ANY"
 #define GET "GET"
@@ -76,6 +78,16 @@ private:
 typedef std::function<Response(Request)> RouteHandler;
 typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
 typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
+
+struct RouteDefinition {
+  std::string route_name;
+  std::string method;
+  std::vector<std::string> params_names;
+  std::regex route_regex;
+  RouteHandler handler;
+};
+Response process_request_with_routes(Request request,
+                                     std::vector<RouteDefinition> *routes);
 
 } // namespace RESTfulpp
 

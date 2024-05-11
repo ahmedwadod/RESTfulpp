@@ -7,13 +7,13 @@ namespace RESTfulpp::Internals {
 class ServerContext {
 public:
   ServerContext() {}
-  ServerContext(size_t max_size, std::vector<Router::RouteDefinition> *routes)
+  ServerContext(size_t max_size, std::vector<RESTfulpp::RouteDefinition> *routes)
       : max_request_size(max_size), route_definitions(routes) {}
 
   size_t max_request_size;
   int keep_alive_timeout;
   // ThreadPool later
-  std::vector<Router::RouteDefinition> *route_definitions;
+  std::vector<RESTfulpp::RouteDefinition> *route_definitions;
 };
 
 class ConnectionContext {
