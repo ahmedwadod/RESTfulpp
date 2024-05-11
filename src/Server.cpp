@@ -159,7 +159,7 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
         char *data = (char *)malloc(len + 1);
         evbuffer_remove(input, data, len);
         try {
-          conn_ctx->request_parser.parse(data, len);
+          conn_ctx->request_parser.process(data, len);
         } catch (const char *e) {
           log_e(conn_ctx->client_address + ": " + e);
           auto res_str =
