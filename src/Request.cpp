@@ -64,3 +64,22 @@ std::string Request::serialize() const {
 
   return s.str();
 }
+
+bool Request::is_request_keep_alive() const {
+  auto connection = headers.find("Connection");
+  if (connection == headers.end())
+    return false || (version_major == 1 && version_minor == 1);
+
+  return connection->second == "keep-alive" ||
+         connection->second == "Keep-Alive" ||
+         (version_major == 1 && version_minor == 1);
+}
+
+void Request::set_request_keep_alive(bool keep_alive, int timeout) {
+  if (keep_alive) {
+    headers["Connection"] = "keep-alive";
+    headers["Keep-Alive"] = "timeout=" + std::to_string(timeout);
+  } else {
+    headers["Connection"] = "close";
+  }
+}

@@ -8,8 +8,8 @@ namespace RESTfulpp::Internals {
 class ServerContext {
 public:
   ServerContext() {}
-  ServerContext(size_t max_size, std::vector<RESTfulpp::RouteDefinition> *routes)
-      : max_request_size(max_size), route_definitions(routes) {}
+  ServerContext(size_t max_size, std::vector<RESTfulpp::RouteDefinition> *routes, int keep_alive_timeout)
+      : max_request_size(max_size), route_definitions(routes), keep_alive_timeout(keep_alive_timeout) {}
 
   size_t max_request_size;
   int keep_alive_timeout;

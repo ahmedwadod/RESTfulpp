@@ -89,6 +89,8 @@ struct RouteDefinition {
 Response process_request_with_routes(Request request,
                                      std::vector<RouteDefinition> *routes);
 
+#define DEFAULT_CONN_TIMEOUT_SEC 5
+
 } // namespace RESTfulpp
 
 #endif // !_RESTFULPP_UTIL_H_

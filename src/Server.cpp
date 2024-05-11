@@ -19,8 +19,8 @@
 
 using namespace RESTfulpp;
 
-Server::Server(unsigned int max_request_length)
-    : _max_req_size(max_request_length) {
+Server::Server(unsigned int max_request_length, int keep_alive_timeout)
+    : _max_req_size(max_request_length), keep_alive_timeout(keep_alive_timeout) {
 
   // ================== Create the libevent event base ==================
   log_d("Creating libevent eventbase..");
@@ -64,13 +64,12 @@ void Server::start(int port, std::string address) {
   sin.sin_port = htons(port);
 
   auto server_ctx =
-      new Internals::ServerContext(_max_req_size, &_route_definitions);
+      new Internals::ServerContext(_max_req_size, &_route_definitions, keep_alive_timeout);
   _listener = evconnlistener_new_bind(_base, _accept_conn_cb,
                                       (void *)server_ctx, LEV_OPT_CLOSE_ON_FREE,
                                       -1, (sockaddr *)&sin, sizeof(sin));
   if (!_listener) {
-    log_e("Error creating on port " + std::to_string(port));
-    throw "Error creating listener";
+    log_e("Error creating listener on port " + std::to_string(port));
   }
   evconnlistener_set_error_cb(
       _listener, [](evconnlistener *listener, void *ctx) {
@@ -113,6 +112,13 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
         req.client_ip = conn_ctx->client_address;
         auto res = RESTfulpp::process_request_with_routes(
             req, conn_ctx->server_context->route_definitions);
+        if(conn_ctx->server_context->keep_alive_timeout > 0 && req.is_request_keep_alive()) {
+          res.set_response_keep_alive(true, conn_ctx->server_context->keep_alive_timeout);
+          timeval timeout_val = {conn_ctx->server_context->keep_alive_timeout, 0};
+          bufferevent_set_timeouts(conn_ctx->buffer_event, &timeout_val, NULL);
+        }else {
+          res.set_response_keep_alive(false, 0);
+        }
         auto res_str = res.serialize();
         bufferevent_write(conn_ctx->buffer_event, res_str.c_str(),
                           res_str.size());
@@ -122,6 +128,7 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
   bufferevent_setcb(
       bev,
       (bufferevent_data_cb)[](struct bufferevent * bev, void *ctx) {
+          bufferevent_set_timeouts(bev,  NULL, NULL);
         Internals::ConnectionContext *conn_ctx =
             (Internals::ConnectionContext *)ctx;
         struct evbuffer *input = bufferevent_get_input(bev);

@@ -27,6 +27,8 @@ public:
   std::map<std::string, std::string> cookies() const;
 
   std::string serialize() const;
+  bool is_request_keep_alive() const;
+  void set_request_keep_alive(bool keep_alive, int timeout = DEFAULT_CONN_TIMEOUT_SEC);
 };
 } // namespace RESTfulpp
 

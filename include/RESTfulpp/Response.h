@@ -24,7 +24,9 @@ public:
   std::string body() const;
   nlohmann::json body_as_json() const;
   std::string serialize() const;
-  bool is_conn_keep_alive() const;
+  bool is_response_keep_alive() const;
+  void set_response_keep_alive(bool keep_alive, int timeout);
+
 };
 } // namespace RESTfulpp
 

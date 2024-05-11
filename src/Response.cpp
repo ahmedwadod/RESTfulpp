@@ -52,15 +52,8 @@ std::string Response::serialize() const {
 
   for (auto header : headers)
     s << header.first << ": " << header.second << "\r\n";
-  
-  s << "Content-Length: " << content.size() << "\r\n";
 
-  if (is_conn_keep_alive()) {
-    s << "Connection: keep-alive\r\n";
-    s << "Keep-Alive: timeout=5, max=1000\r\n";
-  } else {
-    s << "Connection: close\r\n";
-  }
+  s << "Content-Length: " << content.size() << "\r\n";
 
   s << "\r\n" << std::string(content.data(), content.size());
 
@@ -100,11 +93,25 @@ std::string getHttpStatusString(unsigned int statusCode) {
   }
 }
 
-bool Response::is_conn_keep_alive() const {
-  auto conn = headers.find("Connection");
-  if (conn == headers.end())
-    return false || (version_major == 1 && version_minor == 1);
+// on response keep-alive must be explicit
+bool Response::is_response_keep_alive() const {
+  auto connection = headers.find("Connection");
+  if (connection != headers.end() && (connection->second == "keep-alive" ||
+                                      connection->second == "Keep-Alive")) {
+    return true;
+  } else if (connection != headers.end() &&
+             (connection->second == "close" || connection->second == "Close")) {
+    return false;
+  }
 
-  return conn->second == "keep-alive" || conn->second == "Keep-Alive" ||
-         (version_major == 1 && version_minor == 1);
+  return false;
+}
+
+void Response::set_response_keep_alive(bool keep_alive, int timeout) {
+  if (keep_alive) {
+    headers["Connection"] = "keep-alive";
+    headers["Keep-Alive"] = "timeout=" + std::to_string(timeout);
+  } else {
+    headers["Connection"] = "close";
+  }
 }

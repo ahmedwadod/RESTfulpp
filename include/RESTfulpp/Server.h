@@ -21,8 +21,9 @@ namespace RESTfulpp {
 // Server
 class Server {
 public:
-  Server(unsigned int max_request_length = 1024 * 1024);
+  Server(unsigned int max_request_length = 1024 * 1024, int keep_alive_timeout = DEFAULT_CONN_TIMEOUT_SEC);
   ~Server();
+  void start(int port = 8080, std::string address = "127.0.0.1");
 
   void any(std::string route_template, RouteHandler func);
   void get(std::string route_template, RouteHandler func);
@@ -35,7 +36,7 @@ public:
   void trace(std::string route_template, RouteHandler func);
   void connect(std::string route_template, RouteHandler func);
 
-  void start(int port = 8080, std::string address = "127.0.0.1");
+  int keep_alive_timeout;
 
 private:
   event_base *_base;
