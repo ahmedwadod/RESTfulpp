@@ -46,9 +46,8 @@ llhttp_errno BaseParser::_parse(const char *data, unsigned long length) {
 
   auto err = llhttp_execute(&parser, data, length);
   if (err == HPE_OK) {
-    for (auto i = 0; i < _data.key_val_vector.size(); i += 2) {
+    for (auto i = 0; i < _data.key_val_vector.size(); i += 2)
       headers[_data.key_val_vector[i]] = _data.key_val_vector[i + 1];
-    }
     content = std::vector<char>(_data.body.begin(), _data.body.end());
   }
 

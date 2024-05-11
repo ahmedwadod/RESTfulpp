@@ -11,7 +11,7 @@ using namespace nlohmann;
 int main()
 {
   RESTfulpp::setLogLevel(RESTfulpp::LogLevel::DEBUG);
-  RESTfulpp::Server server(8000);
+  RESTfulpp::Server server();
   std::map<std::string, unsigned int> people;
 
   server.get("/", [&people](RESTfulpp::Request req)

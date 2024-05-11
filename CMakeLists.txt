@@ -20,27 +20,31 @@ FetchContent_Declare(
 	URL "https://github.com/nodejs/llhttp/archive/refs/tags/release/v8.1.0.tar.gz"
 )
 FetchContent_Declare(
-	sockpp 
-	GIT_REPOSITORY https://github.com/fpagliughi/sockpp.git
-	GIT_TAG v1.0.0
+	libevent
+	GIT_REPOSITORY https://github.com/libevent/libevent.git
+	GIT_TAG release-2.1.12-stable
 )
 # nlohmann is a dependancy that's why we let the user install it
 find_package(nlohmann_json REQUIRED)
 					
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
-set(SOCKPP_BUILD_SHARED OFF CACHE INTERNAL "Build shared library")
-set(SOCKPP_BUILD_STATIC ON CACHE INTERNAL "Build static library")
-FetchContent_MakeAvailable(llhttp sockpp)
+set(EVENT__DISABLE_DEBUG_MODE, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_BENCHMARK, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_TESTS, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_REGRESS, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_SAMPLES, ON CACHE INTERNAL "")
+FetchContent_MakeAvailable(llhttp libevent)
 # --------------------- END OF EXTERNAL LIBRARIES ------------------------
 
 
 # --------------------- CREATE TARGET RESTFULPP --------------------------
-add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/ThreadPool.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
-target_link_libraries(RESTfulpp sockpp-static llhttp_static nlohmann_json::nlohmann_json)
+add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
+target_link_libraries(RESTfulpp event_core llhttp_static nlohmann_json::nlohmann_json)
 target_include_directories(RESTfulpp PUBLIC include)
 target_include_directories(RESTfulpp PUBLIC ${llhttp_SOURCE_DIR}/include)
-target_include_directories(RESTfulpp PUBLIC ${sockpp_SOURCE_DIR}/include)
+target_include_directories(RESTfulpp PUBLIC ${libevent_BINARY_DIR}/include)
+target_include_directories(RESTfulpp PUBLIC ${libevent_SOURCE_DIR}/include)
 # --------------------- END OF CREATE TARGET RESTFULPP -------------------
 
 # ------------------------------ OPTIONS ---------------------------------

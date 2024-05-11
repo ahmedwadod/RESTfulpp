@@ -36,14 +36,12 @@ std::optional<std::map<std::string, std::string>>
 RESTfulpp::Internals::Router::match_route(RouteDefinition def,
                                           std::string str) {
   std::smatch matches;
-  if (!std::regex_search(str, matches, def.route_regex)) {
+  if (!std::regex_search(str, matches, def.route_regex))
     return {};
-  }
 
   std::map<std::string, std::string> params;
-  for (int i = 0; i < def.params_names.size(); i++) {
+  for (int i = 0; i < def.params_names.size(); i++)
     params[def.params_names[i]] = matches[i + 1];
-  }
 
   return params;
 }

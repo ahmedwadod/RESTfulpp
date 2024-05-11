@@ -1,184 +1,161 @@
 #include "RESTfulpp/Server.h"
+#include "RESTfulpp/Internals/Context.h"
 #include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Internals/Router.h"
-#include "RESTfulpp/Internals/ThreadPool.h"
-#include "RESTfulpp/Request.h"
-#include "RESTfulpp/Response.h"
 #include "RESTfulpp/Logging.h"
-#include "sockpp/inet_address.h"
-#include "sockpp/socket.h"
-#include "sockpp/tcp_acceptor.h"
-#include "sockpp/tcp_socket.h"
+#include "event2/event.h"
+#include <arpa/inet.h>
 #include <cstddef>
-#include <exception>
-#include <iostream>
-#include <mutex>
-#include <thread>
+#include <event2/buffer.h>
+#include <event2/bufferevent.h>
+#include <event2/listener.h>
+#include <event2/util.h>
+#include <netinet/in.h>
+#include <signal.h>
 #include <unistd.h>
-#include <utility>
 #include <vector>
 
 using namespace RESTfulpp;
 
-Server::Server(short port, unsigned int max_request_length)
-    : _max_req_size(max_request_length)
-{
-  sockpp::initialize();
-  _acceptor = sockpp::tcp_acceptor(port);
-  if (!_acceptor)
-  {
-    log_e("Error listening on port " + std::to_string(port));
-  }
-  else
-  {
-    log_i("Listening on port " + std::to_string(port));
+Server::Server(unsigned int max_request_length)
+    : _max_req_size(max_request_length) {
+
+  // ================== Create the libevent event base ==================
+  log_d("Creating libevent eventbase..");
+  _base = event_base_new();
+  if (_base == NULL) {
+    log_e("Error creating libevent event_base");
+    throw "Error creating libevent event_base";
   }
 
-  tcpClientHandler =
-      [&](std::pair<sockpp::tcp_socket, sockpp::inet_address> job)
-  {
-    std::vector<char> req_buf(_max_req_size, 0);
-    size_t n = job.first.read(req_buf.data(), req_buf.size());
-    log_d(job.second.to_string() + ": Received " + std::to_string(n) + " bytes");
-    if (n == 0)
-    {
-      log_d(job.second.to_string() + ": Closed connection");
-      job.first.close();
-      return;
-    }
-
-    Request req;
-    try
-    {
-      log_d(job.second.to_string() + ": Parsing request");
-      Internals::RequestParser parser;
-      req = parser.parse(req_buf.data(), n);
-    }
-    catch (std::exception e)
-    {
-      log_d(job.second.to_string() + ": Error parsing request. Details: " + std::string(e.what()));
-      log_i(job.second.to_string() + ": Sending 400 response");
-      Response res = Response::plaintext(400, "Bad Request");
-      job.first.write(res.serialize());
-      job.first.close();
-      return;
-    }
-
-    // Handle The Request
-    log_i(job.second.to_string() + ": Requesting " + req.method + " " + req.uri.to_string());
-    req.client_ip = job.second.to_string();
-    for (auto def : _route_definitions)
-    {
-      auto match = Internals::Router::match_request(def, req);
-      if (match.has_value())
-      {
-        log_d(req.client_ip + ": Matched route: " + def.method + " " + def.route_name);
-        try
-        {
-          log_d(job.second.to_string() + ": Handling request");
-          req.url_params = match.value();
-          Response resp = def.handler(req);
-          log_d(job.second.to_string() + ": Sending response");
-          job.first.write(resp.serialize());
-          log_d("Closing connection with client: " + req.client_ip);
-          job.first.shutdown(SHUT_WR);
-          job.first.close();
-          return;
-        }
-        catch (std::exception e)
-        {
-          log_e(job.second.to_string() + ": " + req.method + " " + req.uri.to_string() + ": Internal Server Error. Details: " + std::string(e.what()));
-          Response res = Response::plaintext(500, "Server Internal Error");
-          job.first.write(res.serialize());
-          job.first.close();
-          return;
-        }
-      }
-    }
-
-    log_i(job.second.to_string() + ": No route matched " + req.method + " " + req.uri.to_string() + ", sending 404");
-    Response res = Response::plaintext(404, "Page not found");
-    job.first.write(res.serialize());
-    job.first.close();
-    return;
-  };
-
-  _pool = new ThreadPool(tcpClientHandler);
+  // ================== Create SIGNINT event ==================
+  event *signint_event = evsignal_new(
+      _base, SIGINT,
+      [](evutil_socket_t sig, short events, void *user_data) {
+        log_d("Caught SIGINT, shutting down server");
+        event_base_loopbreak((event_base *)user_data);
+      },
+      _base);
+  if (signint_event == NULL) {
+    log_e("Error creating signal event");
+    throw "Error creating signal event";
+  }
+  evsignal_add(signint_event, NULL);
 }
 
-Server::~Server()
-{
+Server::~Server() {
   log_d("Stopping server");
-  _pool->stop();
-  delete _pool;
+  event_base_free(_base);
 }
 
-void Server::start(int thread_count)
-{
-  log_i("Starting server with " + std::to_string(thread_count) + " threads");
-  _pool->start(thread_count);
+void Server::start(int port, std::string address) {
+  log_d("Starting the server");
 
-  while (true)
-  {
-    sockpp::inet_address client_addr;
-    sockpp::tcp_socket c_sock = _acceptor.accept(&client_addr);
-
-    if (!c_sock)
-    {
-      log_e("Error accepting connection. Details: " + _acceptor.last_error_str());
-    }
-    else
-    {
-      log_d("Accepted connection from " + client_addr.to_string());
-      _pool->queue_job(std::make_pair(std::move(c_sock), client_addr));
-    }
+  // Convert address & port to sockaddr
+  struct sockaddr_in sin;
+  memset(&sin, 0, sizeof(sin));
+  if (inet_pton(AF_INET, address.c_str(), &(sin.sin_addr)) <= 0) {
+    log_e("Invalid address format");
+    throw "Invalid address format";
   }
+  sin.sin_family = AF_INET;
+  sin.sin_port = htons(port);
+
+  auto server_ctx =
+      new Internals::ServerContext(_max_req_size, &_route_definitions);
+  _listener = evconnlistener_new_bind(_base, _accept_conn_cb,
+                                      (void *)server_ctx, LEV_OPT_CLOSE_ON_FREE,
+                                      -1, (sockaddr *)&sin, sizeof(sin));
+  if (!_listener) {
+    log_e("Error creating listener");
+    throw "Error creating listener";
+  }
+  evconnlistener_set_error_cb(
+      _listener, [](evconnlistener *listener, void *ctx) {
+        struct event_base *base = evconnlistener_get_base(listener);
+        int err = EVUTIL_SOCKET_ERROR();
+        log_e("Error " + std::to_string(err) + " (" +
+              evutil_socket_error_to_string(err) + ") on listener");
+      });
+
+  log_i("Server started on " + address + ":" + std::to_string(port));
+  event_base_loop(_base, EVLOOP_NO_EXIT_ON_EMPTY);
+}
+
+void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
+                             sockaddr *address, int socklen, void *ctx) {
+  Internals::ServerContext *server_ctx = (Internals::ServerContext *)ctx;
+  Internals::ConnectionContext *conn_ctx =
+      new Internals::ConnectionContext(server_ctx);
+  log_d("Accepting connection");
+  char addr_str[INET_ADDRSTRLEN];
+  const sockaddr_in *addr_in = reinterpret_cast<const sockaddr_in *>(address);
+  inet_ntop(AF_INET, &(addr_in->sin_addr), addr_str, INET_ADDRSTRLEN);
+  conn_ctx->client_address = std::string(addr_str);
+  log_d("Connection from " + conn_ctx->client_address);
+  auto base = evconnlistener_get_base(listener);
+  auto bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
+  if (!bev) {
+    log_e("Error creating bufferevent");
+    throw "Error creating bufferevent";
+  }
+
+  bufferevent_setcb(
+      bev,
+      NULL,
+      NULL,
+      (bufferevent_event_cb)[](struct bufferevent * bev, short events,
+                               void *ctx) {
+        Internals::ConnectionContext *conn_ctx =
+            (Internals::ConnectionContext *)ctx;
+        if (events & BEV_EVENT_ERROR) {
+          log_e(conn_ctx->client_address + ": Error from bufferevent");
+          delete conn_ctx;
+          bufferevent_free(bev);
+        } else if (events & BEV_EVENT_EOF) {
+          log_d(conn_ctx->client_address + ": Connection closed");
+          delete conn_ctx;
+          bufferevent_free(bev);
+        }
+      },
+      (void *)conn_ctx);
+  bufferevent_enable(bev, EV_READ | EV_WRITE);
 }
 
 void Server::_route(std::string method, std::string route_template,
-                    RouteHandler func)
-{
+                    RouteHandler func) {
   auto def = Internals::Router::route_str_to_definition(route_template);
   def.method = method;
   def.handler = func;
   _route_definitions.push_back(def);
 }
-void Server::any(std::string route_template, RouteHandler func)
-{
+void Server::any(std::string route_template, RouteHandler func) {
   _route("ANY", route_template, func);
 }
-void Server::get(std::string route_template, RouteHandler func)
-{
+void Server::get(std::string route_template, RouteHandler func) {
   _route("GET", route_template, func);
 }
-void Server::post(std::string route_template, RouteHandler func)
-{
+void Server::post(std::string route_template, RouteHandler func) {
   _route("POST", route_template, func);
 }
-void Server::put(std::string route_template, RouteHandler func)
-{
+void Server::put(std::string route_template, RouteHandler func) {
   _route("PUT", route_template, func);
 }
-void Server::Delete(std::string route_template, RouteHandler func)
-{
+void Server::Delete(std::string route_template, RouteHandler func) {
   _route("DELETE", route_template, func);
 }
-void Server::patch(std::string route_template, RouteHandler func)
-{
+void Server::patch(std::string route_template, RouteHandler func) {
   _route("PATCH", route_template, func);
 }
 
-void Server::head(std::string route_template, RouteHandler func)
-{
+void Server::head(std::string route_template, RouteHandler func) {
   _route("HEAD", route_template, func);
 }
 
-void Server::options(std::string route_template, RouteHandler func)
-{
+void Server::options(std::string route_template, RouteHandler func) {
   _route("OPTIONS", route_template, func);
 }
 
-void Server::trace(std::string route_template, RouteHandler func)
-{
+void Server::trace(std::string route_template, RouteHandler func) {
   _route("TRACE", route_template, func);
 }

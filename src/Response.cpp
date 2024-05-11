@@ -1,5 +1,4 @@
 #include "RESTfulpp/Response.h"
-#include "nlohmann/json.hpp"
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -51,8 +50,16 @@ std::string Response::serialize() const {
   s << "HTTP/" << version_major << "." << version_minor << " " << status_code
     << " " << getHttpStatusString(status_code) << "\r\n";
 
-  for (auto header : headers) {
+  for (auto header : headers)
     s << header.first << ": " << header.second << "\r\n";
+  
+  s << "Content-Length: " << content.size() << "\r\n";
+
+  if (is_conn_keep_alive()) {
+    s << "Connection: keep-alive\r\n";
+    s << "Keep-Alive: timeout=5, max=1000\r\n";
+  } else {
+    s << "Connection: close\r\n";
   }
 
   s << "\r\n" << std::string(content.data(), content.size());
@@ -91,4 +98,13 @@ std::string getHttpStatusString(unsigned int statusCode) {
     // Return a generic "Unknown Status Code" message if not found
     return "Unknown Status Code";
   }
+}
+
+bool Response::is_conn_keep_alive() const {
+  auto conn = headers.find("Connection");
+  if (conn == headers.end())
+    return false || (version_major == 1 && version_minor == 1);
+
+  return conn->second == "keep-alive" || conn->second == "Keep-Alive" ||
+         (version_major == 1 && version_minor == 1);
 }
