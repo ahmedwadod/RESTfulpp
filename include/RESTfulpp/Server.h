@@ -39,6 +39,7 @@ public:
   int keep_alive_timeout;
 
 private:
+  Internals::ServerContext *ctx;
   event_base *_base;
   evconnlistener *_listener;
   unsigned int _max_req_size;

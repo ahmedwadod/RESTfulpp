@@ -69,6 +69,8 @@ bool Request::is_request_keep_alive() const {
   auto connection = headers.find("Connection");
   if (connection == headers.end())
     return false || (version_major == 1 && version_minor == 1);
+  else if (connection->second == "close")
+    return false;
 
   return connection->second == "keep-alive" ||
          connection->second == "Keep-Alive" ||

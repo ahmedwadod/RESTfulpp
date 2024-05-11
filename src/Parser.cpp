@@ -1,7 +1,7 @@
 #include "RESTfulpp/Internals/Parser.h"
+#include "RESTfulpp/Logging.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
-#include "RESTfulpp/Logging.h"
 #include "llhttp.h"
 #include <cstddef>
 #include <string>
@@ -11,7 +11,6 @@ using namespace RESTfulpp;
 using namespace RESTfulpp::Internals;
 
 BaseParser::BaseParser() {
-  log_d("Creating parser..");
   llhttp_settings_init(&settings);
 
   _data = ParserData();
@@ -68,10 +67,10 @@ BaseParser::BaseParser() {
 
   llhttp_init(&parser, HTTP_BOTH, &settings);
   parser.data = (void *)&_data;
-  log_d("Parser created");
 }
 
-void BaseParser::set_on_complete_cb(std::function<void(void *)> cb, void *args) {
+void BaseParser::set_on_complete_cb(std::function<void(void *)> cb,
+                                    void *args) {
   _data.on_complete = cb;
   _data.on_compelete_args = args;
 }

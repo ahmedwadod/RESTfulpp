@@ -20,7 +20,8 @@
 using namespace RESTfulpp;
 
 Server::Server(unsigned int max_request_length, int keep_alive_timeout)
-    : _max_req_size(max_request_length), keep_alive_timeout(keep_alive_timeout) {
+    : _max_req_size(max_request_length),
+      keep_alive_timeout(keep_alive_timeout) {
 
   // ================== Create the libevent event base ==================
   log_d("Creating libevent eventbase..");
@@ -47,11 +48,15 @@ Server::Server(unsigned int max_request_length, int keep_alive_timeout)
 
 Server::~Server() {
   log_d("Stopping server");
+  delete ctx;
   event_base_free(_base);
 }
 
 void Server::start(int port, std::string address) {
   log_d("Starting the server");
+  // Create the server context
+  ctx = new Internals::ServerContext(
+      _max_req_size, &_route_definitions, keep_alive_timeout);
 
   // Convert address & port to sockaddr
   struct sockaddr_in sin;
@@ -63,14 +68,13 @@ void Server::start(int port, std::string address) {
   sin.sin_family = AF_INET;
   sin.sin_port = htons(port);
 
-  auto server_ctx =
-      new Internals::ServerContext(_max_req_size, &_route_definitions, keep_alive_timeout);
+
+  // Create the listener
   _listener = evconnlistener_new_bind(_base, _accept_conn_cb,
-                                      (void *)server_ctx, LEV_OPT_CLOSE_ON_FREE,
+                                      (void *)ctx, LEV_OPT_CLOSE_ON_FREE,
                                       -1, (sockaddr *)&sin, sizeof(sin));
-  if (!_listener) {
+  if (!_listener)
     log_e("Error creating listener on port " + std::to_string(port));
-  }
   evconnlistener_set_error_cb(
       _listener, [](evconnlistener *listener, void *ctx) {
         struct event_base *base = evconnlistener_get_base(listener);
@@ -108,37 +112,47 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
       [](void *args) {
         Internals::ConnectionContext *conn_ctx =
             (Internals::ConnectionContext *)args;
+        log_d(conn_ctx->client_address + ": Request parsed");
         auto req = conn_ctx->request_parser.snapshot();
+        evbuffer *output = bufferevent_get_output(conn_ctx->buffer_event);
         req.client_ip = conn_ctx->client_address;
         auto res = RESTfulpp::process_request_with_routes(
             req, conn_ctx->server_context->route_definitions);
-        if(conn_ctx->server_context->keep_alive_timeout > 0 && req.is_request_keep_alive()) {
-          res.set_response_keep_alive(true, conn_ctx->server_context->keep_alive_timeout);
-          timeval timeout_val = {conn_ctx->server_context->keep_alive_timeout, 0};
-          bufferevent_set_timeouts(conn_ctx->buffer_event, &timeout_val, NULL);
-        }else {
+        log_d(conn_ctx->client_address + ": Sending response " +
+              std::to_string(res.status_code));
+        if (conn_ctx->server_context->keep_alive_timeout > 0 &&
+            req.is_request_keep_alive()) {
+          res.set_response_keep_alive(
+              true, conn_ctx->server_context->keep_alive_timeout);
+          log_d(conn_ctx->client_address + ": Keep-alive for " +
+                std::to_string(conn_ctx->server_context->keep_alive_timeout) +
+                " seconds");
+        } else {
           res.set_response_keep_alive(false, 0);
+          conn_ctx->should_terminate = true;
+          log_d(conn_ctx->client_address + ": Connection will close afterwards");
         }
         auto res_str = res.serialize();
-        bufferevent_write(conn_ctx->buffer_event, res_str.c_str(),
-                          res_str.size());
+        evbuffer_add(output, res_str.c_str(), res_str.size());
       },
       (void *)conn_ctx);
 
   bufferevent_setcb(
       bev,
       (bufferevent_data_cb)[](struct bufferevent * bev, void *ctx) {
-          bufferevent_set_timeouts(bev,  NULL, NULL);
         Internals::ConnectionContext *conn_ctx =
             (Internals::ConnectionContext *)ctx;
-        struct evbuffer *input = bufferevent_get_input(bev);
+        evbuffer *input = bufferevent_get_input(bev);
+        evbuffer *output = bufferevent_get_output(bev);
         size_t len = evbuffer_get_length(input);
         if (len == 0) {
           return;
         } else if (len > conn_ctx->server_context->max_request_size) {
           log_e(conn_ctx->client_address + ": Request too large");
-          auto res_str = RESTfulpp::Response::plaintext(413, "Request too large").serialize();
-          bufferevent_write(bev, res_str.c_str(), res_str.size());
+          auto res_str =
+              RESTfulpp::Response::plaintext(413, "Request too large")
+                  .serialize();
+          evbuffer_add(output, res_str.c_str(), res_str.size());
           return;
         }
 
@@ -148,12 +162,24 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
           conn_ctx->request_parser.parse(data, len);
         } catch (const char *e) {
           log_e(conn_ctx->client_address + ": " + e);
-          auto res_str = RESTfulpp::Response::plaintext(400, "Error parsing HTTP request").serialize();
-          bufferevent_write(bev, res_str.c_str(), res_str.size());
+          auto res_str =
+              RESTfulpp::Response::plaintext(400, "Error parsing HTTP request")
+                  .serialize();
+          evbuffer_add(output, res_str.c_str(), res_str.size());
         }
         free(data);
       },
-      NULL,
+      (bufferevent_data_cb)[](struct bufferevent * bev, void *ctx) {
+        Internals::ConnectionContext *conn_ctx =
+            (Internals::ConnectionContext *)ctx;
+        evbuffer *output = bufferevent_get_output(bev);
+        if (evbuffer_get_length(output) == 0 && conn_ctx->should_terminate) {
+          log_d(conn_ctx->client_address + ": Closing connection");
+          delete conn_ctx;
+          bufferevent_free(bev);
+          return;
+        }
+      },
       (bufferevent_event_cb)[](struct bufferevent * bev, short events,
                                void *ctx) {
         Internals::ConnectionContext *conn_ctx =

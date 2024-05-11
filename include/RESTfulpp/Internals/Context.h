@@ -25,6 +25,7 @@ public:
   Internals::RequestParser request_parser;
   bufferevent *buffer_event;
   ServerContext *server_context;
+  bool should_terminate = false;
 };
 
 } // namespace RESTfulpp::Internals
