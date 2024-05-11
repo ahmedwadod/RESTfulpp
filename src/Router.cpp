@@ -1,6 +1,6 @@
 #include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Request.h"
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 #include <regex>
 
 using namespace RESTfulpp::Internals::Router;

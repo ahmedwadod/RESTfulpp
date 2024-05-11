@@ -3,8 +3,8 @@
 
 #include "RESTfulpp/Internals/Context.h"
 #include "RESTfulpp/Internals/Router.h"
-#include "RESTfulpp/Types.h"
-#include "Types.h"
+#include "RESTfulpp/Util.h"
+#include "Util.h"
 #include "event2/event.h"
 #include <condition_variable>
 #include <event2/listener.h>

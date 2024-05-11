@@ -1,5 +1,5 @@
 #include "RESTfulpp/Request.h"
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 #include <algorithm>
 #include <ios>
 #include <sstream>
@@ -64,4 +64,3 @@ std::string Request::serialize() const {
 
   return s.str();
 }
-

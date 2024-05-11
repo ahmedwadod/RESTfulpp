@@ -50,7 +50,7 @@ TEST_CASE("Request Cookies", "[Request]") {
   RESTfulpp::Internals::RequestParser p;
   std::string post_str = "GET / HTTP/1.1\r\n"
                          "Host: foo.com\r\n"
-                         "Cookie: say=hi; to=mom;\r\n"
+                         "Cookie: say=hi; to=mom\r\n"
                          "\r\n";
   auto req = p.parse(post_str.c_str(), post_str.length());
   auto cookies = req.cookies();

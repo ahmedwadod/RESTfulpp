@@ -1,7 +1,7 @@
 #ifndef __RESTFULPP_REQUEST_H
 #define __RESTFULPP_REQUEST_H
 
-#include "Types.h"
+#include "Util.h"
 #include "nlohmann/json.hpp"
 #include <map>
 #include <string>

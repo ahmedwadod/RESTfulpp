@@ -40,7 +40,7 @@ FetchContent_MakeAvailable(llhttp libevent)
 
 
 # --------------------- CREATE TARGET RESTFULPP --------------------------
-add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Context.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
+add_library(RESTfulpp src/Logging.cpp src/Util.cpp src/Context.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
 target_link_libraries(RESTfulpp event_core llhttp_static nlohmann_json::nlohmann_json)
 target_include_directories(RESTfulpp PUBLIC include)
 target_include_directories(RESTfulpp PUBLIC ${llhttp_SOURCE_DIR}/include)

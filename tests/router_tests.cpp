@@ -4,7 +4,7 @@
 
 #include "RESTfulpp/Internals/Router.h"
 #include "RESTfulpp/Request.h"
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 
 TEST_CASE("Route to Regex: Validate", "[Router]") {
   std::string route = "/say/[text]/to/[person]";

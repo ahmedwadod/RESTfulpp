@@ -1,8 +1,8 @@
-#ifndef __RESTFUL_TYPES_H__
-#define __RESTFUL_TYPES_H__
+#ifndef _RESTFULPP_UTIL_H_
+#define _RESTFULPP_UTIL_H_
 
 /*
- * RESTful++ - Types.h
+ * RESTful++ - Util.h
  *
  * This is the definitions of the common types and functions.
  *
@@ -79,5 +79,5 @@ typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
 
 } // namespace RESTfulpp
 
-#endif // !__RESTFUL_TYPES_H__
-#define __RESTFUL_TYPES_H__
+#endif // !_RESTFULPP_UTIL_H_
+#define _RESTFULPP_UTIL_H_

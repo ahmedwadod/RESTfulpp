@@ -1,4 +1,4 @@
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 #include <ios>
 #include <map>
 #include <regex>
@@ -93,14 +93,14 @@ std::map<std::string, std::string> RESTfulpp::parseParams(std::string query,
   std::map<std::string, std::string> params;
   std::string param_pair;
   std::string key, value;
-  // If the seprator is ; then we replace "; " with just ";"
-  if (seprator == ';')
-    query = std::regex_replace(query, std::regex("; "), ";");
   for (char c : query) {
     if (c == seprator) {
       _parse_param_pair(param_pair, key, value, params);
       param_pair.clear();
     } else {
+      // if param_pair is empty and c is a space, ignore it
+      if (param_pair.empty() && c == ' ')
+        continue;
       param_pair += c;
     }
   }

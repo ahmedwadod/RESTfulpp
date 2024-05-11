@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 
 TEST_CASE("Full URI", "[URI]") {
   RESTfulpp::Uri uri("/ahmed/say?text=hi&to=mom");

@@ -3,7 +3,7 @@
 
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
-#include "RESTfulpp/Types.h"
+#include "RESTfulpp/Util.h"
 #include <string>
 
 namespace RESTfulpp {
