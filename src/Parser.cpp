@@ -9,11 +9,31 @@
 using namespace RESTfulpp;
 using namespace RESTfulpp::Internals;
 
-BaseParser::BaseParser() {
+BaseParser::BaseParser(std::function<void()> on_parsing_complete)
+    : _on_parsing_complete(on_parsing_complete) {
   llhttp_settings_init(&settings);
+
+  _data = ParserData();
+  _data.on_complete = [&]() { _on_parsing_complete(); };
+
+  settings.on_message_begin = [](llhttp_t *p) {
+    auto parserData = static_cast<ParserData *>(p->data);
+    parserData->method.clear();
+    parserData->url.clear();
+    parserData->key_val_vector.clear();
+    parserData->body.clear();
+    return 0;
+  };
 
   settings.on_method = [](llhttp_t *p, const char *at, size_t length) {
     ((ParserData *)p->data)->method = std::string(at, length);
+    return 0;
+  };
+
+  settings.on_version_complete = [](llhttp_t *p) {
+    auto parserData = static_cast<ParserData *>(p->data);
+    parserData->version_major = llhttp_get_http_major(p);
+    parserData->version_minor = llhttp_get_http_minor(p);
     return 0;
   };
 
@@ -33,7 +53,13 @@ BaseParser::BaseParser() {
   };
 
   settings.on_body = [](llhttp_t *p, const char *at, size_t length) {
-    ((ParserData *)p->data)->body = std::string(at, length);
+    ((ParserData *)p->data)->body.insert(((ParserData *)p->data)->body.end(), at, at + length);
+    return 0;
+  };
+
+  settings.on_message_complete = [](llhttp_t *p) {
+    auto parserData = static_cast<ParserData *>(p->data);
+    parserData->on_complete();
     return 0;
   };
 
@@ -41,60 +67,75 @@ BaseParser::BaseParser() {
   parser.data = (void *)&_data;
 }
 
-llhttp_errno BaseParser::_parse(const char *data, unsigned long length) {
-  llhttp_reset(&parser);
-
-  auto err = llhttp_execute(&parser, data, length);
-  if (err == HPE_OK) {
-    for (auto i = 0; i < _data.key_val_vector.size(); i += 2)
-      headers[_data.key_val_vector[i]] = _data.key_val_vector[i + 1];
-    content = std::vector<char>(_data.body.begin(), _data.body.end());
-  }
-
-  return err;
+void BaseParser::reset() {
+  llhttp_init(&parser, HTTP_BOTH, &settings);
+  _data.method.clear();
+  _data.url.clear();
+  _data.key_val_vector.clear();
+  _data.body.clear();
+  parser.data = (void *)&_data;
 }
 
-RequestParser::RequestParser() : BaseParser() {}
+BaseParser::~BaseParser() {}
 
-Request RequestParser::parse(const char *data, size_t length) {
+llhttp_errno BaseParser::_process(const char *data, size_t length) {
+  return llhttp_execute(&parser, data, length);
+}
+
+// ======== RequestParser ========
+RequestParser::RequestParser(std::function<void()> on_parsing_complete)
+    : BaseParser(on_parsing_complete) {}
+
+Request RequestParser::snapshot() {
+
   Request req;
-  if (_parse(data, length) != HPE_OK) {
-    throw llhttp_get_error_reason(&parser);
-    return req;
-  }
-
   req.method = _data.method;
   req.uri = Uri(_data.url);
-  req.version_major = llhttp_get_http_major(&parser);
-  req.version_minor = llhttp_get_http_minor(&parser);
-  req.headers = headers;
-  req.content = content;
+  req.version_major = _data.version_major;
+  req.version_minor = _data.version_minor;
+  for (auto i = 0; i < _data.key_val_vector.size(); i += 2)
+    req.headers[_data.key_val_vector[i]] = _data.key_val_vector[i + 1];
+  req.content = std::vector<char>(_data.body.begin(), _data.body.end());
 
   return req;
 }
 
-Request RequestParser::parse(std::vector<char> data) {
-  return parse(data.data(), data.size());
+void RequestParser::process(const char *data, size_t length) {
+  if (_process(data, length) != HPE_OK)
+    throw llhttp_get_error_reason(&parser);
 }
 
-ResponseParser::ResponseParser() : BaseParser() {}
+Request RequestParser::parse(const char *data, size_t length) {
+  process(data, length);
+  return snapshot();
+}
 
-Response ResponseParser::parse(const char *data, size_t length) {
+// ======== End of RequestParser ========
+
+// ======== ResponseParser ========
+ResponseParser::ResponseParser(std::function<void()> on_parsing_complete)
+    : BaseParser(on_parsing_complete) {}
+
+Response ResponseParser::snapshot() {
   Response res;
-  if (_parse(data, length) != HPE_OK) {
-    throw llhttp_get_error_reason(&parser);
-    return res;
-  }
-
   res.status_code = llhttp_get_status_code(&parser);
-  res.version_major = llhttp_get_http_major(&parser);
-  res.version_minor = llhttp_get_http_minor(&parser);
-  res.headers = headers;
-  res.content = content;
+  res.version_major = _data.version_major;
+  res.version_minor = _data.version_minor;
+  for (auto i = 0; i < _data.key_val_vector.size(); i += 2)
+    res.headers[_data.key_val_vector[i]] = _data.key_val_vector[i + 1];
+  res.content = std::vector<char>(_data.body.begin(), _data.body.end());
 
   return res;
 }
 
-Response ResponseParser::parse(std::vector<char> raw_request) {
-  return parse(raw_request.data(), raw_request.size());
+void ResponseParser::process(const char *data, size_t length) {
+  if (_process(data, length) != HPE_OK)
+    throw llhttp_get_error_reason(&parser);
+}
+
+Response ResponseParser::parse(const char *data, size_t length) {
+  if (_process(data, length) != HPE_OK)
+    throw llhttp_get_error_reason(&parser);
+
+  return snapshot();
 }

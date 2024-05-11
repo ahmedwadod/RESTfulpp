@@ -10,8 +10,8 @@
 namespace RESTfulpp {
 class Response {
 public:
-  unsigned int status_code;
-  unsigned int version_major, version_minor;
+  int status_code;
+  int version_major, version_minor;
   std::map<std::string, std::string> headers;
   std::vector<char> content;
 

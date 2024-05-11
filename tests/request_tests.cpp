@@ -4,10 +4,9 @@
 #include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Request.h"
 
-TEST_CASE("Serializing Request", "[Request]")
-{
+TEST_CASE("Serializing Request", "[Request]") {
   RESTfulpp::Internals::RequestParser p;
-  std::string post_str = "POST / HTTP/2.0\r\n"
+  std::string post_str = "POST / HTTP/1.1\r\n"
                          "Host: foo.com\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
                          "Content-Length: 13\r\n"
@@ -18,10 +17,9 @@ TEST_CASE("Serializing Request", "[Request]")
   REQUIRE(req.serialize() == post_str);
 };
 
-TEST_CASE("Request Form Data", "[Request]")
-{
+TEST_CASE("Request Form Data", "[Request]") {
   RESTfulpp::Internals::RequestParser p;
-  std::string post_str = "POST / HTTP/2.0\r\n"
+  std::string post_str = "POST / HTTP/1.1\r\n"
                          "Host: foo.com\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
                          "Content-Length: 13\r\n"
@@ -34,8 +32,7 @@ TEST_CASE("Request Form Data", "[Request]")
   REQUIRE(formData["to"] == "Mom");
 };
 
-TEST_CASE("JSON Request", "[Request]")
-{
+TEST_CASE("JSON Request", "[Request]") {
   RESTfulpp::Internals::RequestParser p;
   std::string post_str = "POST /json HTTP/1.1\r\n"
                          "Host: foo.com\r\n"
@@ -49,8 +46,7 @@ TEST_CASE("JSON Request", "[Request]")
   REQUIRE(jsonData["to"] == "mom");
 }
 
-TEST_CASE("Request Cookies", "[Request]")
-{
+TEST_CASE("Request Cookies", "[Request]") {
   RESTfulpp::Internals::RequestParser p;
   std::string post_str = "GET / HTTP/1.1\r\n"
                          "Host: foo.com\r\n"

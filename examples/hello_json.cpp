@@ -1,21 +1,19 @@
+#include "RESTfulpp/Logging.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
 #include "RESTfulpp/Server.h"
-#include "RESTfulpp/Logging.h"
 #include "nlohmann/json_fwd.hpp"
 #include <map>
 #include <string>
 #include <vector>
 
 using namespace nlohmann;
-int main()
-{
+int main() {
   RESTfulpp::setLogLevel(RESTfulpp::LogLevel::DEBUG);
-  RESTfulpp::Server server();
+  RESTfulpp::Server server;
   std::map<std::string, unsigned int> people;
 
-  server.get("/", [&people](RESTfulpp::Request req)
-             {
+  server.get("/", [&people](RESTfulpp::Request req) {
     std::vector<json> all_people;
     for (auto key : people) {
       json person;
@@ -25,10 +23,10 @@ int main()
     }
     json data = all_people;
 
-    return RESTfulpp::Response::json(200, data); });
+    return RESTfulpp::Response::json(200, data);
+  });
 
-  server.post("/", [&people](RESTfulpp::Request req)
-              {
+  server.post("/", [&people](RESTfulpp::Request req) {
     json data = req.body_as_json();
     if (data.count("name") == 0) {
       return RESTfulpp::Response::json(400,
@@ -44,10 +42,10 @@ int main()
 
     people[data["name"]] = data["age"];
 
-    return RESTfulpp::Response::json(200, data); });
+    return RESTfulpp::Response::json(200, data);
+  });
 
-  server.put("/", [&people](RESTfulpp::Request req)
-             {
+  server.put("/", [&people](RESTfulpp::Request req) {
     json data = req.body_as_json();
     if (data.count("name") == 0) {
       return RESTfulpp::Response::json(400,
@@ -63,7 +61,8 @@ int main()
 
     people[data["name"]] = data["age"];
 
-    return RESTfulpp::Response::json(200, data); });
+    return RESTfulpp::Response::json(200, data);
+  });
 
   server.start();
 }

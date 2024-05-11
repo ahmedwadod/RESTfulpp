@@ -1,20 +1,20 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(Catch2 3 REQUIRED)
 
-add_executable(url url.cpp)
+add_executable(url url_tests.cpp)
 target_link_directories(url PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(url PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
 
-add_executable(parser parser.cpp)
+add_executable(parser parser_tests.cpp)
 target_link_directories(parser PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(parser PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
 
-add_executable(request request.cpp)
+add_executable(request request_tests.cpp)
 target_link_directories(request PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(request PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
 
-add_executable(router router.cpp)
+add_executable(router router_tests.cpp)
 target_link_directories(router PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(router PRIVATE Catch2::Catch2WithMain PRIVATE RESTfulpp)
 

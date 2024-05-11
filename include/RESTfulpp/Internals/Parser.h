@@ -17,17 +17,20 @@ struct ParserData {
   std::string method;
   std::string url;
   std::vector<std::string> key_val_vector;
-  std::string body;
+  std::vector<char> body;
+  unsigned int version_major, version_minor;
+  std::function<void()> on_complete;
 };
 
 class BaseParser {
 public:
-  BaseParser();
+  BaseParser(std::function<void()> on_parsing_complete = []() {});
+  ~BaseParser();
+  void reset();
 
 protected:
-  std::map<std::string, std::string> headers;
-  std::vector<char> content;
-  llhttp_errno _parse(const char *data, unsigned long length);
+  llhttp_errno _process(const char *data, size_t length);
+  std::function<void()> _on_parsing_complete;
 
   ParserData _data;
   llhttp_t parser;
@@ -36,16 +39,21 @@ protected:
 
 class RequestParser : BaseParser {
 public:
-  RequestParser();
+  RequestParser(std::function<void()> on_parsing_complete = []() {});
+  void process(const char *data, size_t length);
   Request parse(const char *data, size_t length);
-  Request parse(std::vector<char> raw_data);
+
+  Request snapshot();
 };
 
 class ResponseParser : BaseParser {
 public:
-  ResponseParser();
+  ResponseParser(std::function<void()> on_parsing_complete = []() {});
+  void process(const char *data, size_t length);
   Response parse(const char *data, size_t length);
-  Response parse(std::vector<char> raw_data);
+
+  Response snapshot();
+
 };
 
 } // namespace Internals

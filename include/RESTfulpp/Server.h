@@ -1,8 +1,8 @@
 #ifndef __RESTFULPP_SERVER_H__
 #define __RESTFULPP_SERVER_H__
 
+#include "RESTfulpp/Internals/Context.h"
 #include "RESTfulpp/Internals/Router.h"
-#include "RESTfulpp/Internals/ServerContext.h"
 #include "RESTfulpp/Types.h"
 #include "Types.h"
 #include "event2/event.h"

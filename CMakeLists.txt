@@ -31,15 +31,16 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
 set(EVENT__DISABLE_DEBUG_MODE, ON CACHE INTERNAL "")
 set(EVENT__DISABLE_BENCHMARK, ON CACHE INTERNAL "")
-set(EVENT__DISABLE_TESTS, ON CACHE INTERNAL "")
-set(EVENT__DISABLE_REGRESS, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_TESTS, OFF CACHE INTERNAL "If tests should be compiled or not")
+set(EVENT__DISABLE_REGRESS, OFF CACHE INTERNAL "Disable the regress tests")
 set(EVENT__DISABLE_SAMPLES, ON CACHE INTERNAL "")
+set(EVENT__DISABLE_REGRESS, ON CACHE INTERNAL "")
 FetchContent_MakeAvailable(llhttp libevent)
 # --------------------- END OF EXTERNAL LIBRARIES ------------------------
 
 
 # --------------------- CREATE TARGET RESTFULPP --------------------------
-add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
+add_library(RESTfulpp src/Logging.cpp src/Types.cpp src/Context.cpp src/Request.cpp src/Response.cpp src/Parser.cpp src/Server.cpp src/Client.cpp src/Router.cpp)
 target_link_libraries(RESTfulpp event_core llhttp_static nlohmann_json::nlohmann_json)
 target_include_directories(RESTfulpp PUBLIC include)
 target_include_directories(RESTfulpp PUBLIC ${llhttp_SOURCE_DIR}/include)
@@ -48,14 +49,15 @@ target_include_directories(RESTfulpp PUBLIC ${libevent_SOURCE_DIR}/include)
 # --------------------- END OF CREATE TARGET RESTFULPP -------------------
 
 # ------------------------------ OPTIONS ---------------------------------
-option(RESTFULPP_BUILD_EXAMPLES "RESTFULPP_BUILD_EXAMPLES" OFF)
-option(RESTFULPP_BUILD_TESTS "RESTFULPP_BUILD_TESTS" OFF)
+option(RESTFULPP_BUILD_EXAMPLES "RESTFULPP_BUILD_EXAMPLES" ON)
+option(RESTFULPP_BUILD_TESTS "RESTFULPP_BUILD_TESTS" ON)
 
 if(RESTFULPP_BUILD_EXAMPLES)
 	add_subdirectory(examples)
 endif()
 
 if(RESTFULPP_BUILD_TESTS)
+	enable_testing()
 	add_subdirectory(tests)
 endif()
 # --------------------------- END OF OPTIONS ----------------------------
