@@ -3,6 +3,6 @@
 
 using namespace RESTfulpp::Internals;
 
-ConnectionContext::ConnectionContext(ServerContext *ctx) : server_context(ctx) {
-  request_parser = RequestParser();
+ConnectionContext::ConnectionContext(ServerContext *ctx) : server_context(ctx), request_parser() {
+  client_address = "";
 }

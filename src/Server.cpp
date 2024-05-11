@@ -84,15 +84,17 @@ void Server::start(int port, std::string address) {
 
 void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
                              sockaddr *address, int socklen, void *ctx) {
+  log_d("Accepting connection");
   Internals::ServerContext *server_ctx = (Internals::ServerContext *)ctx;
   Internals::ConnectionContext *conn_ctx =
       new Internals::ConnectionContext(server_ctx);
-  log_d("Accepting connection");
+
   char addr_str[INET_ADDRSTRLEN];
   const sockaddr_in *addr_in = reinterpret_cast<const sockaddr_in *>(address);
   inet_ntop(AF_INET, &(addr_in->sin_addr), addr_str, INET_ADDRSTRLEN);
   conn_ctx->client_address = std::string(addr_str);
   log_d("Connection from " + conn_ctx->client_address);
+
   auto base = evconnlistener_get_base(listener);
   auto bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
   if (!bev) {
@@ -100,9 +102,39 @@ void Server::_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
     throw "Error creating bufferevent";
   }
 
+  conn_ctx->request_parser.set_on_complete_cb(
+      [](void *args) {
+        Internals::ConnectionContext *conn_ctx =
+            (Internals::ConnectionContext *)args;
+        auto req = conn_ctx->request_parser.snapshot();
+        log_d(req.serialize());
+      },
+      (void *)conn_ctx);
+
   bufferevent_setcb(
       bev,
-      NULL,
+      (bufferevent_data_cb)[](struct bufferevent * bev, void *ctx) {
+        Internals::ConnectionContext *conn_ctx =
+            (Internals::ConnectionContext *)ctx;
+        struct evbuffer *input = bufferevent_get_input(bev);
+        size_t len = evbuffer_get_length(input);
+        if (len == 0) {
+          return;
+        } else if (len > conn_ctx->server_context->max_request_size) {
+          log_e(conn_ctx->client_address + ": Request too large");
+          delete conn_ctx;
+          bufferevent_free(bev);
+          return;
+        }
+        char *data = (char *)malloc(len + 1);
+        evbuffer_remove(input, data, len);
+        try {
+          conn_ctx->request_parser.parse(data, len);
+        } catch (const char *e) {
+          log_e(e);
+        }
+        free(data);
+      },
       NULL,
       (bufferevent_event_cb)[](struct bufferevent * bev, short events,
                                void *ctx) {

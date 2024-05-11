@@ -1,6 +1,7 @@
 #include "RESTfulpp/Internals/Parser.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
+#include "RESTfulpp/Logging.h"
 #include "llhttp.h"
 #include <cstddef>
 #include <string>
@@ -9,12 +10,13 @@
 using namespace RESTfulpp;
 using namespace RESTfulpp::Internals;
 
-BaseParser::BaseParser(std::function<void()> on_parsing_complete)
-    : _on_parsing_complete(on_parsing_complete) {
+BaseParser::BaseParser() {
+  log_d("Creating parser..");
   llhttp_settings_init(&settings);
 
   _data = ParserData();
-  _data.on_complete = [&]() { _on_parsing_complete(); };
+  _data.on_compelete_args = nullptr;
+  _data.on_complete = [](void *args) { return; };
 
   settings.on_message_begin = [](llhttp_t *p) {
     auto parserData = static_cast<ParserData *>(p->data);
@@ -53,18 +55,25 @@ BaseParser::BaseParser(std::function<void()> on_parsing_complete)
   };
 
   settings.on_body = [](llhttp_t *p, const char *at, size_t length) {
-    ((ParserData *)p->data)->body.insert(((ParserData *)p->data)->body.end(), at, at + length);
+    ((ParserData *)p->data)
+        ->body.insert(((ParserData *)p->data)->body.end(), at, at + length);
     return 0;
   };
 
   settings.on_message_complete = [](llhttp_t *p) {
     auto parserData = static_cast<ParserData *>(p->data);
-    parserData->on_complete();
+    parserData->on_complete(parserData->on_compelete_args);
     return 0;
   };
 
   llhttp_init(&parser, HTTP_BOTH, &settings);
   parser.data = (void *)&_data;
+  log_d("Parser created");
+}
+
+void BaseParser::set_on_complete_cb(std::function<void(void *)> cb, void *args) {
+  _data.on_complete = cb;
+  _data.on_compelete_args = args;
 }
 
 void BaseParser::reset() {
@@ -83,8 +92,7 @@ llhttp_errno BaseParser::_process(const char *data, size_t length) {
 }
 
 // ======== RequestParser ========
-RequestParser::RequestParser(std::function<void()> on_parsing_complete)
-    : BaseParser(on_parsing_complete) {}
+RequestParser::RequestParser() {}
 
 Request RequestParser::snapshot() {
 
@@ -113,8 +121,7 @@ Request RequestParser::parse(const char *data, size_t length) {
 // ======== End of RequestParser ========
 
 // ======== ResponseParser ========
-ResponseParser::ResponseParser(std::function<void()> on_parsing_complete)
-    : BaseParser(on_parsing_complete) {}
+ResponseParser::ResponseParser() {}
 
 Response ResponseParser::snapshot() {
   Response res;
