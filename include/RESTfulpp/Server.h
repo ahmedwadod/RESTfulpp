@@ -21,7 +21,8 @@ namespace RESTfulpp {
 // Server
 class Server {
 public:
-  Server(unsigned int max_request_length = 1024 * 1024, int keep_alive_timeout = DEFAULT_CONN_TIMEOUT_SEC);
+  Server(unsigned int max_request_length = 1024 * 1024,
+         int keep_alive_timeout = DEFAULT_CONN_TIMEOUT_SEC);
   ~Server();
   void start(int port = 8080, std::string address = "127.0.0.1");
 
@@ -47,8 +48,15 @@ private:
               RouteHandler func);
   std::vector<RESTfulpp::RouteDefinition> _route_definitions;
   Internals::ServerContext _context;
-  static void _accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
-                              sockaddr *address, int socklen, void *ctx);
+
+  // Callbacks
+  static void ntwrk_accept_conn_cb(evconnlistener *listener, evutil_socket_t fd,
+                                   sockaddr *address, int socklen, void *ctx);
+  static void ntwrk_bev_read_cb(bufferevent *bev, void *ctx);
+  static void ntwrk_bev_write_cb(bufferevent *bev, void *ctx);
+  static void ntwrk_bev_event_cb(bufferevent *bev, short events, void *ctx);
+  static void ntwrk_listener_error_cb(evconnlistener *listener, void *ctx);
+  static void ntwrk_parsing_complete_cb(void *args);
 };
 } // namespace RESTfulpp
 
