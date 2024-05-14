@@ -20,7 +20,7 @@ std::optional<std::map<std::string, std::string>>
 match_route(RESTfulpp::RouteDefinition def, std::string str);
 
 std::optional<std::map<std::string, std::string>>
-match_request(RESTfulpp::RouteDefinition def, RESTfulpp::Request req);
+match_request(RESTfulpp::RouteDefinition def, const RESTfulpp::Request &req);
 
 } // namespace Router
 } // namespace Internals

@@ -48,7 +48,7 @@ RESTfulpp::Internals::Router::match_route(RouteDefinition def,
 
 std::optional<std::map<std::string, std::string>>
 RESTfulpp::Internals::Router::match_request(RouteDefinition def,
-                                            RESTfulpp::Request req) {
+                                            const RESTfulpp::Request &req) {
   if (def.method != req.method && def.method != "ANY")
     return {};
   return match_route(def, req.uri.path);

@@ -88,9 +88,3 @@ void Request::set_request_keep_alive(bool keep_alive, int timeout) {
 }
 
 size_t Request::get_extra_size() const { return _extra_size; }
-
-Request::~Request() {
-  if (_extra != NULL)
-    free(_extra);
-}
-

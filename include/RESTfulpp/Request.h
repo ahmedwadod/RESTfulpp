@@ -4,8 +4,10 @@
 #include "Util.h"
 #include "nlohmann/json.hpp"
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
+
 namespace RESTfulpp {
 class Request {
 public:
@@ -18,7 +20,6 @@ public:
   std::vector<char> content;
 
   Request();
-  ~Request();
 
   static Request from_form_data(std::map<std::string, std::string> form_data);
 
@@ -41,7 +42,7 @@ public:
    * @param extra: The extra payload to be set
    * @return void
    */
-  template <typename T> void set_extra(T extra);
+  template <typename T> void set_extra(const T &extra);
 
   /*
    * @brief This function is used to get the extra payload from the request
@@ -58,7 +59,7 @@ public:
 
 private:
   size_t _extra_size = 0;
-  void *_extra = NULL;
+  std::shared_ptr<void> _extra;
 };
 } // namespace RESTfulpp
 
