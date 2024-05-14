@@ -117,13 +117,13 @@ std::map<std::string, std::string> RESTfulpp::parseParams(std::string query,
   return params;
 }
 
-Response callFunctionChain(Request req,
+Response callFunctionChain(Request &req,
                            std::vector<MiddlewareHandler> middlewares,
                            size_t index, RouteHandler handler) {
   if (index < middlewares.size()) {
     log_d("Calling middleware #" + std::to_string(index + 1));
     return middlewares[index](
-        req, [&middlewares, &index, &handler](Request req) {
+        req, [&middlewares, &index, &handler](Request &req) {
           return callFunctionChain(req, middlewares, index + 1, handler);
         });
   } else {
@@ -133,7 +133,7 @@ Response callFunctionChain(Request req,
 }
 
 Response
-RESTfulpp::process_request_with_routes(Request req,
+RESTfulpp::process_request_with_routes(Request &req,
                                        std::vector<RouteDefinition> *routes) {
   for (auto route : *routes) {
     auto match = Internals::Router::match_request(route, req);

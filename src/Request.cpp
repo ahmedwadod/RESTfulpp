@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <ios>
 #include <sstream>
+#include <stdlib.h>
 #include <string>
 #include <vector>
 
@@ -85,3 +86,11 @@ void Request::set_request_keep_alive(bool keep_alive, int timeout) {
     headers["Connection"] = "close";
   }
 }
+
+size_t Request::get_extra_size() const { return _extra_size; }
+
+Request::~Request() {
+  if (_extra != NULL)
+    free(_extra);
+}
+

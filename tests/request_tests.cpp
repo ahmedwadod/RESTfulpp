@@ -57,3 +57,25 @@ TEST_CASE("Request Cookies", "[Request]") {
   REQUIRE(cookies["say"] == "hi");
   REQUIRE(cookies["to"] == "mom");
 }
+
+TEST_CASE("Request Extras: Setting and Getting", "[Request]") {
+  RESTfulpp::Internals::RequestParser p;
+  std::string post_str = "GET / HTTP/1.1\r\n"
+                         "Host: foo.com\r\n";
+  auto req = p.parse(post_str.c_str(), post_str.length());
+  req.set_extra<int>(5);
+  REQUIRE(*req.get_extra<int>() == 5);
+}
+
+TEST_CASE("Request Extras: Memory", "[Request]") {
+  RESTfulpp::Internals::RequestParser p;
+  std::string post_str = "GET / HTTP/1.1\r\n"
+                         "Host: foo.com\r\n";
+  auto req = p.parse(post_str.c_str(), post_str.length());
+  req.set_extra<uint8_t>(5);
+  REQUIRE(*req.get_extra<uint8_t>() == 5);
+  REQUIRE(req.get_extra_size() == sizeof(uint8_t));
+  req.set_extra<uint32_t>(7);
+  REQUIRE(*req.get_extra<uint32_t>() == 7);
+  REQUIRE(req.get_extra_size() == sizeof(uint32_t));
+}

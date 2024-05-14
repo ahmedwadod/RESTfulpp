@@ -74,8 +74,8 @@ private:
 #define PATCH "PATCH"
 
 // Functions that are used with the route definitions
-typedef std::function<Response(Request&)> RouteHandler;
-typedef std::function<Response(Request&, RouteHandler)> MiddlewareHandler;
+typedef std::function<Response(Request &)> RouteHandler;
+typedef std::function<Response(Request &, RouteHandler)> MiddlewareHandler;
 
 struct RouteDefinition {
   std::string route_name;
@@ -85,7 +85,7 @@ struct RouteDefinition {
   std::vector<MiddlewareHandler> middlewares;
   RouteHandler handler;
 };
-Response process_request_with_routes(Request request,
+Response process_request_with_routes(Request &request,
                                      std::vector<RouteDefinition> *routes);
 
 #define DEFAULT_CONN_TIMEOUT_SEC 5
