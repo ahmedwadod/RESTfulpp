@@ -118,6 +118,7 @@ void Server::ntwrk_parsing_complete_cb(void *args) {
       req.is_request_keep_alive()) {
     res.set_response_keep_alive(true,
                                 conn_ctx->server_context->keep_alive_timeout);
+    conn_ctx->should_terminate = false;
     log_d(conn_ctx->client_address + ": Keep-alive for " +
           std::to_string(conn_ctx->server_context->keep_alive_timeout) +
           " seconds");

@@ -87,6 +87,17 @@ void Server::_route(std::string method, std::string route_template,
   def.handler = func;
   _route_definitions.push_back(def);
 }
+
+void Server::_route(std::string method, std::string route_template,
+                    std::vector<MiddlewareHandler> middlewares,
+                    RouteHandler func) {
+  auto def = Internals::Router::route_str_to_definition(route_template);
+  def.method = method;
+  def.handler = func;
+  def.middlewares = std::vector(middlewares);
+  _route_definitions.push_back(def);
+}
+
 void Server::any(std::string route_template, RouteHandler func) {
   _route("ANY", route_template, func);
 }
@@ -116,4 +127,9 @@ void Server::options(std::string route_template, RouteHandler func) {
 
 void Server::trace(std::string route_template, RouteHandler func) {
   _route("TRACE", route_template, func);
+}
+
+void Server::get(std::string route_template,
+                 std::vector<MiddlewareHandler> middlewares, RouteHandler func) {
+  _route("GET", route_template, middlewares, func);
 }

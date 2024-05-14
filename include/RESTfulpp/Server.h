@@ -12,6 +12,7 @@
 #include <map>
 #include <mutex>
 #include <queue>
+#include <string>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -37,6 +38,9 @@ public:
   void trace(std::string route_template, RouteHandler func);
   void connect(std::string route_template, RouteHandler func);
 
+  void get(std::string route_template,
+           std::vector<MiddlewareHandler> middlewares, RouteHandler func);
+
   int keep_alive_timeout;
 
 private:
@@ -46,6 +50,8 @@ private:
   unsigned int _max_req_size;
   void _route(std::string method, std::string route_template,
               RouteHandler func);
+  void _route(std::string method, std::string route_template,
+              std::vector<MiddlewareHandler> middlewares, RouteHandler func);
   std::vector<RESTfulpp::RouteDefinition> _route_definitions;
   Internals::ServerContext _context;
 

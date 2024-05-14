@@ -11,9 +11,9 @@
  *
  */
 
-#include <regex>
 #include <functional>
 #include <map>
+#include <regex>
 #include <string>
 #include <variant>
 #include <vector>
@@ -61,7 +61,6 @@ private:
   void parse(std::string url_str);
 };
 
-
 // Methods (Unused for now)
 #define ANY "ANY"
 #define GET "GET"
@@ -75,15 +74,15 @@ private:
 #define PATCH "PATCH"
 
 // Functions that are used with the route definitions
-typedef std::function<Response(Request)> RouteHandler;
-typedef std::function<Response(Request, RouteHandler)> MiddlewareHandler;
-typedef std::variant<RouteHandler, MiddlewareHandler> RouteFunction;
+typedef std::function<Response(Request&)> RouteHandler;
+typedef std::function<Response(Request&, RouteHandler)> MiddlewareHandler;
 
 struct RouteDefinition {
   std::string route_name;
   std::string method;
   std::vector<std::string> params_names;
   std::regex route_regex;
+  std::vector<MiddlewareHandler> middlewares;
   RouteHandler handler;
 };
 Response process_request_with_routes(Request request,

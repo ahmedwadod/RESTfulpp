@@ -7,3 +7,7 @@ target_link_libraries(hello PRIVATE RESTfulpp)
 add_executable(hello_json hello_json.cpp)
 target_link_directories(hello_json PUBLIC ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(hello_json PRIVATE RESTfulpp)
+
+add_executable(middlewares middlewares.cpp)
+target_link_directories(middlewares PUBLIC ${CMAKE_BINARY_DIR}/lib)
+target_link_libraries(middlewares PRIVATE RESTfulpp)

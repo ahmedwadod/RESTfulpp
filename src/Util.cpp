@@ -1,7 +1,8 @@
 #include "RESTfulpp/Util.h"
+#include "RESTfulpp/Internals/Router.h"
+#include "RESTfulpp/Logging.h"
 #include "RESTfulpp/Request.h"
 #include "RESTfulpp/Response.h"
-#include "RESTfulpp/Internals/Router.h"
 #include <ios>
 #include <map>
 #include <regex>
@@ -116,15 +117,43 @@ std::map<std::string, std::string> RESTfulpp::parseParams(std::string query,
   return params;
 }
 
-Response RESTfulpp::process_request_with_routes(Request req,
-                                     std::vector<RouteDefinition> *routes) {
+Response callFunctionChain(Request req,
+                           std::vector<MiddlewareHandler> middlewares,
+                           size_t index, RouteHandler handler) {
+  if (index < middlewares.size()) {
+    log_d("Calling middleware #" + std::to_string(index + 1));
+    return middlewares[index](
+        req, [&middlewares, &index, &handler](Request req) {
+          return callFunctionChain(req, middlewares, index + 1, handler);
+        });
+  } else {
+    log_d("Calling handler");
+    return handler(req);
+  }
+}
+
+Response
+RESTfulpp::process_request_with_routes(Request req,
+                                       std::vector<RouteDefinition> *routes) {
   for (auto route : *routes) {
     auto match = Internals::Router::match_request(route, req);
     if (match.has_value()) {
       try {
+        // Attach the url param values to the request
         req.url_params = match.value();
+
+        // If middlewares is not empty call the middlewares in chain and
+        // terminate with the RouteHandler
+        if (route.middlewares.size() > 0) {
+          log_d("Route " + route.route_name + " has middlewares");
+          return callFunctionChain(req, route.middlewares, 0, route.handler);
+        }
+        // Else just call the RouteHandler
         return route.handler(req);
       } catch (std::exception &e) {
+        log_e(req.client_ip + " " + req.method + " " + req.uri.path + " " +
+              e.what());
+        // In case of an error return 500
         return Response::plaintext(500, "Internal Server Error");
       }
     }
