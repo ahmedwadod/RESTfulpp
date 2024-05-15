@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# Setup VCPKG if VCPKG_ROOT is defined
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+	set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
 # --------------------- EXTERNAL LIBRARIES -------------------------------
 include(FetchContent)
 
@@ -25,7 +30,7 @@ FetchContent_Declare(
 	GIT_TAG release-2.1.12-stable
 )
 # nlohmann is a dependancy that's why we let the user install it
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 					
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
